@@ -1,11 +1,11 @@
 package com.hubspot.hbase.tasks.balancing.cost;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.primitives.UnsignedLong;
-import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.primitives.UnsignedLong;
 import com.hubspot.hbase.tasks.balancing.RegionAssignment;
 import com.hubspot.hbase.tasks.models.RegionStats;
 import com.hubspot.hbase.utils.Pair;
@@ -24,7 +24,7 @@ public class ProximateRegionKeyCost extends CostFunction {
 
   @Override
   protected double actuallyComputeCost(final Iterable<RegionAssignment> assignments) {
-    final Multimap<Pair<ServerName, String>, RegionAssignment> assignmentsByServerTable = Multimaps.index (assignments, new Function<RegionAssignment, Pair<ServerName, String>>() {
+    final Multimap<Pair<ServerName, String>, RegionAssignment> assignmentsByServerTable = Multimaps.index(assignments, new Function<RegionAssignment, Pair<ServerName, String>>() {
       @Nullable
       @Override
       public Pair<ServerName, String> apply(@Nullable final RegionAssignment input) {
@@ -43,7 +43,7 @@ public class ProximateRegionKeyCost extends CostFunction {
       }));
       totalCost += computeGaps(regions);
     }
-		if (assignmentsByServerTable.isEmpty()) return 0;
+    if (assignmentsByServerTable.isEmpty()) return 0;
     return Math.pow(totalCost / assignmentsByServerTable.size(), 0.3);
   }
 
@@ -60,7 +60,7 @@ public class ProximateRegionKeyCost extends CostFunction {
     for (final String table : regionsByTable.keySet()) {
       totalCost += computeGaps(regionsByTable.get(table));
     }
-		if (regions.isEmpty()) return 0;
+    if (regions.isEmpty()) return 0;
     return Math.pow(computeGaps(regions) / regions.size(), 0.3);
   }
 

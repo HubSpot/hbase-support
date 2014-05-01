@@ -19,7 +19,7 @@ public class AbstractEvennessCost extends CostFunction {
   public AbstractEvennessCost(final double weight, final Function<RegionStats, ? extends Number> statFunction) {
     super(weight);
     this.statFunction = statFunction;
-    this.assignmentFunction = Functions.compose(statFunction, new Function<RegionAssignment, RegionStats>(){
+    this.assignmentFunction = Functions.compose(statFunction, new Function<RegionAssignment, RegionStats>() {
       @Override
       public RegionStats apply(final RegionAssignment input) {
         return input.getRegionStats();

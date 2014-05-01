@@ -9,8 +9,8 @@ public class HBaseBalancerWorker implements Runnable {
 
   @Inject
   public HBaseBalancerWorker(final Provider<HBaseBalancerJob> hBaseBalancerJob) {
-		this.hBaseBalancerJob = hBaseBalancerJob;
-	}
+    this.hBaseBalancerJob = hBaseBalancerJob;
+  }
 
   @Override
   public void run() {

@@ -2,6 +2,7 @@ package com.hubspot.hbase.tasks.balancing.annealing;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -9,7 +10,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.base.Optional;
 import com.hubspot.hbase.tasks.balancing.RegionAssignment;
 import com.hubspot.hbase.tasks.models.RegionStats;
 import org.apache.hadoop.hbase.HRegionInfo;

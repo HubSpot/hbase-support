@@ -1,12 +1,10 @@
 package org.apache.hadoop.hbase;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.base.Throwables;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hbase.catalog.CatalogTracker;
 import org.apache.hadoop.hbase.catalog.MetaReader;
@@ -16,10 +14,11 @@ import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.SnapshotDescriptio
 import org.apache.hadoop.hbase.snapshot.SnapshotCreationException;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 public class HBaseAdminWrapper {
   private final HBaseAdmin admin;
@@ -45,7 +44,7 @@ public class HBaseAdminWrapper {
 
   public CatalogTracker getCatalogTracker() {
     try {
-      return (CatalogTracker)getCatalogTracker.invoke(admin);
+      return (CatalogTracker) getCatalogTracker.invoke(admin);
     } catch (Exception e) {
       throw Throwables.propagate(e);
     }
@@ -92,7 +91,7 @@ public class HBaseAdminWrapper {
 
   public Map<HRegionInfo, ServerName> getRegionInfosForTable(final String table) throws IOException {
     final Set<String> otherTables = Sets.newHashSet();
-    for  (final HTableDescriptor descriptor : get().listTables()) {
+    for (final HTableDescriptor descriptor : get().listTables()) {
       if (!table.equalsIgnoreCase(descriptor.getNameAsString())) {
         otherTables.add(descriptor.getNameAsString());
       }
@@ -133,7 +132,7 @@ public class HBaseAdminWrapper {
     admin.move(region.getEncodedNameAsBytes(), Bytes.toBytes(server.getServerName()));
   }
 
-  public void flush(String tableOrRegionName) throws IOException, InterruptedException{
+  public void flush(String tableOrRegionName) throws IOException, InterruptedException {
     admin.flush(tableOrRegionName);
   }
 

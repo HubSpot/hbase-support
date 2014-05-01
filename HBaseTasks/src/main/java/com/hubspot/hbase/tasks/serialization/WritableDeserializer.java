@@ -16,12 +16,12 @@ public class WritableDeserializer<T extends Writable> extends JsonDeserializer<T
   @Override
   @SuppressWarnings("unchecked")
   public T deserialize(final JsonParser jp, final DeserializationContext ctxt) throws IOException, JsonProcessingException {
-    Class<T> clazz = (Class<T>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    Class<T> clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     try {
       final Writable result = clazz.newInstance();
       final byte[] bytes = Base64.decodeBase64(jp.getValueAsString());
       result.readFields(ByteStreams.newDataInput(bytes));
-      return (T)result;
+      return (T) result;
     } catch (Exception e) {
       throw Throwables.propagate(e);
     }

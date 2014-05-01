@@ -1,10 +1,10 @@
 package com.hubspot.hbase.tasks.load;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
-import com.google.common.base.Throwables;
 import com.hubspot.hbase.tasks.hdfs.HBaseHdfsInfo;
 import com.hubspot.hbase.tasks.helpers.jmx.RegionServerJMXInfo;
 import com.hubspot.hbase.tasks.models.RegionStats;

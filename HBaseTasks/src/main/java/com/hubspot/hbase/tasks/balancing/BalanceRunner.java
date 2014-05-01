@@ -4,14 +4,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.collect.*;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import com.hubspot.hbase.tasks.balancing.config.OptimizationModule;
 import com.hubspot.hbase.tasks.compaction.SlowCompactionManager;
 import com.hubspot.hbase.tasks.compaction.TransitionWatcher;
@@ -49,19 +53,26 @@ public class BalanceRunner {
   private final Provider<HdfsLocalityInfo> hdfsLocalityInfo;
   private final Balancer balancer;
 
-  @Inject @ForArg(HBaseTaskOption.ACTUALLY_RUN)
+  @Inject
+  @ForArg(HBaseTaskOption.ACTUALLY_RUN)
   private Optional<Boolean> actuallyRun;
-  @Inject @ForArg(HBaseTaskOption.BALANCE_OPTIMIZATION_TIME_SECONDS)
+  @Inject
+  @ForArg(HBaseTaskOption.BALANCE_OPTIMIZATION_TIME_SECONDS)
   private Optional<Integer> maxOptimizationTimeSeconds;
-  @Inject @ForArg(HBaseTaskOption.MAX_TRANSITIONS_PER_MINUTE)
+  @Inject
+  @ForArg(HBaseTaskOption.MAX_TRANSITIONS_PER_MINUTE)
   private Optional<Integer> transitionsPerMinute;
-  @Inject @ForArg(HBaseTaskOption.MAX_TRANSITIONS)
+  @Inject
+  @ForArg(HBaseTaskOption.MAX_TRANSITIONS)
   private Optional<Integer> maxSimultaneousTransitions;
-  @Inject @ForArg(HBaseTaskOption.TABLE)
+  @Inject
+  @ForArg(HBaseTaskOption.TABLE)
   private Optional<String> tableToBalance;
-  @Inject @ForArg(HBaseTaskOption.INPUT_FILE)
+  @Inject
+  @ForArg(HBaseTaskOption.INPUT_FILE)
   private Optional<String> inputFile;
-  @Inject @Named(OptimizationModule.TOTAL_TRANSITIONS)
+  @Inject
+  @Named(OptimizationModule.TOTAL_TRANSITIONS)
   private int totalTransitions;
 
   @Inject
@@ -108,27 +119,27 @@ public class BalanceRunner {
 
     final TransitionWatcher.Stoppable stoppable = TransitionWatcher.getStartWatcherThread(hBaseAdminWrapper.get().get(), slowCompactionManager.get(), regionInfos.values(), transitions);
 
-		try {
-    	Set<String> movedRegions = Sets.newHashSet();
-			for (final Map.Entry<HRegionInfo, ServerName> entry : transitions.entrySet()) {
+    try {
+      Set<String> movedRegions = Sets.newHashSet();
+      for (final Map.Entry<HRegionInfo, ServerName> entry : transitions.entrySet()) {
         timedSemaphore.acquire();
-				waitForTransitionRoom(maxSimultaneousTransitions.get(), movedRegions);
-				System.out.println(String.format("Moving %s::%s TO %s", entry.getKey().getTableNameAsString(), entry.getKey().getEncodedName(), entry.getValue().getHostname()));
-				hBaseAdminWrapper.get().get().move(entry.getKey().getEncodedNameAsBytes(), Bytes.toBytes(entry.getValue().getServerName()));
-				movedRegionsMeter.mark();
-				movedRegions.add(entry.getKey().getEncodedName());
-				Thread.sleep(500);
-			}
+        waitForTransitionRoom(maxSimultaneousTransitions.get(), movedRegions);
+        System.out.println(String.format("Moving %s::%s TO %s", entry.getKey().getTableNameAsString(), entry.getKey().getEncodedName(), entry.getValue().getHostname()));
+        hBaseAdminWrapper.get().get().move(entry.getKey().getEncodedNameAsBytes(), Bytes.toBytes(entry.getValue().getServerName()));
+        movedRegionsMeter.mark();
+        movedRegions.add(entry.getKey().getEncodedName());
+        Thread.sleep(500);
+      }
 
-			waitForTransitionRoom(1, movedRegions);
+      waitForTransitionRoom(1, movedRegions);
 
-			Thread.sleep(1000);
+      Thread.sleep(1000);
 
-			System.out.println("Finished transitions. Waiting for all requested compactions to complete.");
-		} finally {
-			stoppable.stop();
-			slowCompactionManager.get().awaitCompactions();
-		}
+      System.out.println("Finished transitions. Waiting for all requested compactions to complete.");
+    } finally {
+      stoppable.stop();
+      slowCompactionManager.get().awaitCompactions();
+    }
   }
 
   private Multimap<ServerName, RegionStats> getRegionInfos() throws Exception {
@@ -138,7 +149,8 @@ public class BalanceRunner {
         payload = Gzip.decompress(payload);
       }
       SerializationModule.fixJacksonModule();
-      final List<RegionStats> input = ObjectMapperSingleton.MAPPER.readValue(payload, new TypeReference<List<RegionStats>>(){});
+      final List<RegionStats> input = ObjectMapperSingleton.MAPPER.readValue(payload, new TypeReference<List<RegionStats>>() {
+      });
       Iterable<RegionStats> resultingInput = input;
       if (tableToBalance.isPresent()) {
         resultingInput = Iterables.filter(input, new Predicate<RegionStats>() {
@@ -152,17 +164,18 @@ public class BalanceRunner {
     }
 
     final Multimap<ServerName, RegionStats> regionInfos = tableToBalance.isPresent() ?
-                                                              RegionStats.regionInfoToStats(hBaseAdminWrapper.get().getRegionInfosForTableByServer(tableToBalance.get()))
-                                                              : RegionStats.regionInfoToStats(hBaseAdminWrapper.get().getRegionInfosByServer(true));
+            RegionStats.regionInfoToStats(hBaseAdminWrapper.get().getRegionInfosForTableByServer(tableToBalance.get()))
+            : RegionStats.regionInfoToStats(hBaseAdminWrapper.get().getRegionInfosByServer(true));
     return annotate(regionInfos);
   }
 
   private Multimap<ServerName, RegionStats> annotate(Multimap<ServerName, RegionStats> regionInfos) throws Exception {
     regionLoadEstimation.get().annotateRegionsWithLoadInPlace(regionInfos);
     hdfsLocalityInfo.get().annotateRegionsWithLocalityInPlace(regionInfos);
-    
+
     return regionInfos;
   }
+
   private void waitForTransitionRoom(final int maxTransitions, Set<String> movedRegions) throws IOException, InterruptedException {
     while (Sets.intersection(hBaseAdminWrapper.get().get().getClusterStatus().getRegionsInTransition().keySet(), movedRegions).size() >= maxTransitions) {
       Thread.sleep(1000);

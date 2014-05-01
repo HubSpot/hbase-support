@@ -3,13 +3,13 @@ package com.hubspot.hbase.tasks.jobs;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.inject.Inject;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import com.hubspot.hbase.tasks.config.commandargs.ForArg;
 import com.hubspot.hbase.tasks.config.commandargs.HBaseTaskOption;
 import com.hubspot.hbase.tasks.hdfs.HdfsLocalityInfo;
@@ -35,11 +35,14 @@ public class DisplayRegionStatsJob implements Runnable {
   private final HBaseAdminWrapper hBaseAdminWrapper;
   private final HdfsLocalityInfo hdfsLocalityInfo;
 
-  @Inject @ForArg(HBaseTaskOption.OUTPUT_FILE)
+  @Inject
+  @ForArg(HBaseTaskOption.OUTPUT_FILE)
   private Optional<String> exportStatsFile;
-  @Inject @ForArg(HBaseTaskOption.TABLE)
+  @Inject
+  @ForArg(HBaseTaskOption.TABLE)
   private Optional<String> table;
-  @Inject @ForArg(HBaseTaskOption.SERVER_NAME)
+  @Inject
+  @ForArg(HBaseTaskOption.SERVER_NAME)
   private Optional<String> serverName;
 
   @Inject
@@ -74,7 +77,7 @@ public class DisplayRegionStatsJob implements Runnable {
     System.out.println("\n\n");
 
     printRegionInfo("Region info by server", "Region server", regionInfos.values(), getServerFunction());
-    
+
     if (table.isPresent()) {
       printRegionInfo("Region info by region for table " + table.get(), "Region", Iterables.filter(regionInfos.values(), filterByTablePredicate(table.get())), getRegionNameFunction());
     }
@@ -101,7 +104,7 @@ public class DisplayRegionStatsJob implements Runnable {
       }
     };
   }
-  
+
   private Function<RegionStats, String> getRegionNameFunction() {
     return new Function<RegionStats, String>() {
 
@@ -121,7 +124,7 @@ public class DisplayRegionStatsJob implements Runnable {
       }
     };
   }
-  
+
   private Predicate<RegionStats> filterByTablePredicate(final String tableName) {
     return new Predicate<RegionStats>() {
 
@@ -141,7 +144,7 @@ public class DisplayRegionStatsJob implements Runnable {
       }
     };
   }
-  
+
   private void printRegionInfo(final String title, final String keyName, final Iterable<RegionStats> regionStats, final Function<RegionStats, String> indexFunction) {
     final Multimap<String, RegionStats> regionStatsMultimap = Multimaps.index(regionStats, indexFunction);
     final String row = Strings.repeat("-", 99);
@@ -150,13 +153,13 @@ public class DisplayRegionStatsJob implements Runnable {
     System.out.println("+" + row + "+");
     System.out.println(String.format("|%-50s|%-7s|%-8s|%-7s|%-7s|%-7s|%-7s|", keyName, "Count", "Load", "Size", "50th", "95th", "Lcty"));
     System.out.println(String.format("|%-50s+%-7s+%-8s+%-7s+%-7s+%-7s+%-7s|",
-        Strings.repeat("-", 50),
-        Strings.repeat("-", 7),
-        Strings.repeat("-", 8),
-        Strings.repeat("-", 7),
-        Strings.repeat("-", 7),
-        Strings.repeat("-", 7),
-        Strings.repeat("-", 7)));
+            Strings.repeat("-", 50),
+            Strings.repeat("-", 7),
+            Strings.repeat("-", 8),
+            Strings.repeat("-", 7),
+            Strings.repeat("-", 7),
+            Strings.repeat("-", 7),
+            Strings.repeat("-", 7)));
 
     final List<String> keys = Lists.newArrayList(regionStatsMultimap.keySet());
     Collections.sort(keys);
@@ -184,13 +187,13 @@ public class DisplayRegionStatsJob implements Runnable {
         tableLoad /= totalLoad;
       }
       System.out.println(String.format("|%-50s|%-7s|%-8s|%-7s|%-7s|%-7s|%-7s|",
-          key,
-          regionStatsList.size(),
-          String.format("%.3f", tableLoad),
-          prettyByteDisplay(totalSize),
-          prettyByteDisplay(regionStatsList.get(regionStatsList.size() >> 1).getSize()),
-          prettyByteDisplay(regionStatsList.get((regionStatsList.size() * 95) / 100).getSize()),
-          String.format("%.4f", totalSize == 0 ? 1.0 : 1 - (((double)transferCost) / totalSize)))
+              key,
+              regionStatsList.size(),
+              String.format("%.3f", tableLoad),
+              prettyByteDisplay(totalSize),
+              prettyByteDisplay(regionStatsList.get(regionStatsList.size() >> 1).getSize()),
+              prettyByteDisplay(regionStatsList.get((regionStatsList.size() * 95) / 100).getSize()),
+              String.format("%.4f", totalSize == 0 ? 1.0 : 1 - (((double) transferCost) / totalSize)))
       );
     }
 

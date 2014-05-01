@@ -29,7 +29,7 @@ public class MigrationPerturber extends TableGreedyPerturber {
     super(costFunction, greedyPerturber);
 
     HBaseTaskOption.validateConflictingArgs(String.format("MigrationPerturber can migrate FROM a set of servers, or TO a set of servers.  Choose either -%s or -%s, but not both.", HBaseTaskOption.SERVER_NAME, HBaseTaskOption.SOURCE_SERVER_NAME),
-        serverName, sourceServerName);
+            serverName, sourceServerName);
 
     targetServers = HBaseTaskOption.getCommaSeparatedAsList(serverName);
     sourceServers = HBaseTaskOption.getCommaSeparatedAsList(sourceServerName);

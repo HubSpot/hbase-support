@@ -23,8 +23,11 @@ public abstract class CostFunction {
     this.weight = weight;
   }
 
-  public void setInitialData(final List<RegionStats> regions, ImmutableSet<ServerName> servers) {}
+  public void setInitialData(final List<RegionStats> regions, ImmutableSet<ServerName> servers) {
+  }
+
   protected abstract double actuallyComputeCost(final Iterable<RegionAssignment> assignments);
+
   public abstract double getServerCost(ServerName serverName, final Collection<RegionStats> regions);
 
   public final double computeCost(final Iterable<RegionAssignment> assignments) {
@@ -40,33 +43,32 @@ public abstract class CostFunction {
 
   /**
    * Compute a normalized uneveness function. Given a set a numbers, we try to define a function such that:
-   *
+   * <p/>
    * Complete evenness = 0
    * Complete unnevenness = 1
-   *
+   * <p/>
    * Complete unnevenness can be defined as something like 100,0,0,0
-   *
+   * <p/>
    * The definition I settled on was: 1 - e^(-N*σ/µ)
-   *
+   * <p/>
    * Let's walk through some examples:
-   *
+   * <p/>
    * Perfect balancing:
-   *
-   *   If we are perfectly balanced, σ = 0, then 1 - e^0 = 0.
-   *
+   * <p/>
+   * If we are perfectly balanced, σ = 0, then 1 - e^0 = 0.
+   * <p/>
    * Perfectly inbalanced:
-   *
-   *   Look at 100,0,0,0
-   *
-   *   µ = 25
-   *   N*σ = sqrt(75^2) = 75
-   *   1 - e^(-75 / 25) = 0.95
-   *
+   * <p/>
+   * Look at 100,0,0,0
+   * <p/>
+   * µ = 25
+   * N*σ = sqrt(75^2) = 75
+   * 1 - e^(-75 / 25) = 0.95
+   * <p/>
    * It's not 1, but it's pretty close.
-   *
+   * <p/>
    * Any time we have a cost function that needs to determine cost based on unevenness, we can pas it here and
    * get a normalized cost between 0 and 1.
-   *
    */
   protected double unevenness(Collection<? extends Number> numbers) {
     if (numbers.isEmpty()) return 0;

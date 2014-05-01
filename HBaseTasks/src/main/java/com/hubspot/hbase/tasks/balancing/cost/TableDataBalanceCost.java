@@ -1,9 +1,8 @@
 package com.hubspot.hbase.tasks.balancing.cost;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.hubspot.hbase.tasks.balancing.RegionAssignment;
 import com.hubspot.hbase.tasks.models.RegionStats;
@@ -12,7 +11,6 @@ import org.apache.hadoop.hbase.ServerName;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class TableDataBalanceCost extends CostFunction {
   private Map<String, Double> tableAverageSizes;

@@ -10,5 +10,6 @@ import java.util.Map;
 
 public interface Balancer {
   public void setRegionInformation(Multimap<ServerName, RegionStats> regionInfo, ImmutableSet<ServerName> servers);
+
   public Map<HRegionInfo, ServerName> computeTransitions(int timeLimitSeconds, int maxTransitions) throws Exception;
 }

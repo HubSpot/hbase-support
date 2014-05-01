@@ -1,40 +1,39 @@
 package com.hubspot.hbase.tasks.compaction;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-
+import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.hubspot.hbase.tasks.models.RegionStats;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 
-import com.google.common.collect.Maps;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Sets;
-import com.hubspot.hbase.tasks.models.RegionStats;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 public class TransitionWatcher implements Runnable {
   private static final Log LOG = LogFactory.getLog(TransitionWatcher.class);
-  
+
   private final SlowCompactionManager slowCompactionManager;
   private final HBaseAdmin admin;
   private final Map<String, HRegionInfo> encodedToRegions;
   private final Map<HRegionInfo, ServerName> transitions;
   private final Map<HRegionInfo, RegionStats> regionStats;
-	private final CountDownLatch stopped = new CountDownLatch(1);
+  private final CountDownLatch stopped = new CountDownLatch(1);
 
   private TransitionWatcher(final HBaseAdmin admin, final SlowCompactionManager slowCompactionManager, final Iterable<RegionStats> regions, final Map<HRegionInfo, ServerName> transitions) {
     this.slowCompactionManager = slowCompactionManager;
     this.admin = admin;
     this.transitions = transitions;
-    
+
     encodedToRegions = Maps.newHashMap();
     regionStats = Maps.newHashMap();
-    
+
     for (final RegionStats region : regions) {
       encodedToRegions.put(region.getRegionInfo().getEncodedName(), region.getRegionInfo());
       regionStats.put(region.getRegionInfo(), region);
@@ -42,21 +41,21 @@ public class TransitionWatcher implements Runnable {
   }
 
   public static Stoppable getStartWatcherThread(HBaseAdmin admin, SlowCompactionManager manager, Collection<RegionStats> regionStats, Map<HRegionInfo, ServerName> transitions) {
-		final TransitionWatcher runnable = new TransitionWatcher(admin, manager, regionStats, transitions);
+    final TransitionWatcher runnable = new TransitionWatcher(admin, manager, regionStats, transitions);
     final Thread compactionThread = new Thread(runnable);
     compactionThread.setName("compaction-thread-watcher");
     compactionThread.setDaemon(true);
 
-		compactionThread.start();
+    compactionThread.start();
 
-		return new Stoppable() {
-			@Override
-			public void stop() {
-				runnable.stopped.countDown();
-			}
-		};
+    return new Stoppable() {
+      @Override
+      public void stop() {
+        runnable.stopped.countDown();
+      }
+    };
   }
-  
+
   @Override
   public void run() {
     try {
@@ -64,7 +63,7 @@ public class TransitionWatcher implements Runnable {
     } catch (Exception e) {
       throw Throwables.propagate(e);
     }
-    
+
     Set<String> regionsInTransition = Collections.emptySet();
     while (stopped.getCount() > 0) {
       try {
@@ -96,7 +95,7 @@ public class TransitionWatcher implements Runnable {
     }
   }
 
-	public interface Stoppable {
-		void stop();
-	}
+  public interface Stoppable {
+    void stop();
+  }
 }

@@ -25,9 +25,20 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.*;
-import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.HRegionInfo;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.RemoteExceptionHandler;
+import org.apache.hadoop.hbase.TableNotDisabledException;
+import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HConnection;
+import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HConnectionManager.HConnectable;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.MergeTools;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
@@ -59,51 +70,51 @@ public class HMerge {
   /**
    * Scans the table and merges two adjacent regions if they are small. This
    * only happens when a lot of rows are deleted.
-   *
+   * <p/>
    * When merging the META region, the HBase instance must be offline.
    * When merging a normal table, the HBase instance must be online, but the
    * table must be disabled.
    *
-   * @param conf        - configuration object for HBase
-   * @param fs          - FileSystem where regions reside
-   * @param tableName   - Table to be compacted
+   * @param conf      - configuration object for HBase
+   * @param fs        - FileSystem where regions reside
+   * @param tableName - Table to be compacted
    * @throws IOException
    * @throws InterruptedException
    */
-  public static void merge(Configuration conf, FileSystem fs, final byte [] tableName, final boolean shouldExecute) throws IOException, InterruptedException {
+  public static void merge(Configuration conf, FileSystem fs, final byte[] tableName, final boolean shouldExecute) throws IOException, InterruptedException {
     merge(conf, tableName, true, new FullTableMerger(conf, fs, tableName, shouldExecute));
   }
 
   /**
    * Scans the table and merges any empty regions with a nearby non-empty regions
    *
-   * @param conf        - configuration object for HBase
-   * @param fs          - FileSystem where regions reside
-   * @param tableName   - Table to be purged of empty regions
+   * @param conf      - configuration object for HBase
+   * @param fs        - FileSystem where regions reside
+   * @param tableName - Table to be purged of empty regions
    * @throws IOException
    * @throws InterruptedException
    */
-  public static void mergeEmptyRegions(Configuration conf, FileSystem fs, final byte [] tableName, final boolean shouldExecute) throws IOException, InterruptedException {
+  public static void mergeEmptyRegions(Configuration conf, FileSystem fs, final byte[] tableName, final boolean shouldExecute) throws IOException, InterruptedException {
     merge(conf, tableName, true, new EmptyRegionMerger(conf, fs, tableName, shouldExecute));
   }
 
   /**
    * Scans the table and merges two adjacent regions if they are small. This
    * only happens when a lot of rows are deleted.
-   *
+   * <p/>
    * When merging the META region, the HBase instance must be offline.
    * When merging a normal table, the HBase instance must be online, but the
    * table must be disabled.
    *
-   * @param conf        - configuration object for HBase
-   * @param tableName   - Table to be compacted
+   * @param conf              - configuration object for HBase
+   * @param tableName         - Table to be compacted
    * @param testMasterRunning True if we are to verify master is down before
-   * running merge
-   * @param merger      - Instance of a Merger to use to use to merge regions
+   *                          running merge
+   * @param merger            - Instance of a Merger to use to use to merge regions
    * @throws IOException
    * @throws InterruptedException
    */
-  public static void merge(Configuration conf, final byte [] tableName, final boolean testMasterRunning, Merger merger)
+  public static void merge(Configuration conf, final byte[] tableName, final boolean testMasterRunning, Merger merger)
           throws IOException, InterruptedException {
     boolean masterIsRunning = false;
     if (testMasterRunning) {
@@ -115,7 +126,7 @@ public class HMerge {
                 }
               });
     }
-    if(!masterIsRunning) {
+    if (!masterIsRunning) {
       throw new IllegalStateException(
               "HBase instance must be running to merge a normal table");
     }
@@ -146,7 +157,7 @@ public class HMerge {
     protected final long maxFilesize;
 
 
-    protected Merger(Configuration conf, FileSystem fs, final byte [] tableNameBytes, boolean execute)
+    protected Merger(Configuration conf, FileSystem fs, final byte[] tableNameBytes, boolean execute)
             throws IOException {
       this.conf = conf;
       this.fs = fs;
@@ -177,7 +188,7 @@ public class HMerge {
         try {
           hlog.closeAndDelete();
 
-        } catch(IOException e) {
+        } catch (IOException e) {
           LOG.error(e);
         }
       }
@@ -214,7 +225,7 @@ public class HMerge {
         if (execute) {
           metaTable.delete(delete);
         }
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("updated columns in row: " + Bytes.toStringBinary(regionsToDelete[r]));
         }
       }
@@ -225,7 +236,7 @@ public class HMerge {
       if (execute) {
         metaTable.put(put);
       }
-      if(LOG.isDebugEnabled()) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("updated columns in row: "
                 + Bytes.toStringBinary(newRegion.getRegionName()));
       }
@@ -354,7 +365,7 @@ public class HMerge {
     @Override
     protected void updateMeta(final byte[][] regionsToDelete, HRegion newRegion) throws IOException {
       for (int r = 0; r < regionsToDelete.length; r++) {
-        if(latestRegion != null && Bytes.equals(regionsToDelete[r], latestRegion.getRegionName())) {
+        if (latestRegion != null && Bytes.equals(regionsToDelete[r], latestRegion.getRegionName())) {
           LOG.info("Had to set latestRegion to null");
           latestRegion = null;
         }
@@ -363,6 +374,7 @@ public class HMerge {
       super.updateMeta(regionsToDelete, newRegion);
     }
   }
+
   /**
    * Merges regions across entire table, reducing the total number of regions
    * by some factor, as defined by HMerge.REGION_FACTOR_CONF
@@ -378,7 +390,7 @@ public class HMerge {
     @Override
     protected HRegion[] next() throws IOException {
       List<HRegion> regions = new ArrayList<HRegion>();
-      if(latestRegion == null) {
+      if (latestRegion == null) {
         latestRegion = nextRegion();
       }
 
@@ -409,7 +421,7 @@ public class HMerge {
     @Override
     protected void updateMeta(final byte[][] regionsToDelete, HRegion newRegion) throws IOException {
       for (int r = 0; r < regionsToDelete.length; r++) {
-        if(latestRegion != null && Bytes.equals(regionsToDelete[r], latestRegion.getRegionName())) {
+        if (latestRegion != null && Bytes.equals(regionsToDelete[r], latestRegion.getRegionName())) {
           latestRegion = null;
         }
       }

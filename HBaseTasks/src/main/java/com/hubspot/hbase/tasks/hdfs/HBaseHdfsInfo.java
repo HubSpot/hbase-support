@@ -1,17 +1,16 @@
 package com.hubspot.hbase.tasks.hdfs;
 
 import com.google.common.base.Function;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.hubspot.hbase.tasks.config.HBaseTasksModule;
 import com.hubspot.hbase.tasks.models.RegionStats;
-
 import com.hubspot.hbase.utils.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,11 +30,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.Queue;
 
 @Singleton
 public class HBaseHdfsInfo {
@@ -46,10 +45,10 @@ public class HBaseHdfsInfo {
   private final FileSystem fileSystem;
   private final Path rootPath;
   private final PathFilter pathFilter;
-  
+
   @Inject
   public HBaseHdfsInfo(final FileSystem fileSystem,
-		       @Named(HBaseTasksModule.HBASE_PATH) final Path rootPath) {
+                       @Named(HBaseTasksModule.HBASE_PATH) final Path rootPath) {
     this.fileSystem = fileSystem;
     this.rootPath = rootPath;
     this.regionStatsCache = CacheBuilder.newBuilder()
@@ -70,20 +69,20 @@ public class HBaseHdfsInfo {
       }
     };
   }
-  
+
   public void annotateRegionsWithHdfsInfoInPlace(final Multimap<ServerName, RegionStats> regionStats) throws InterruptedException, ExecutionException {
     List<Future<?>> futures = Lists.newArrayList();
-    
+
     for (final RegionStats stat : regionStats.values()) {
       futures.add(executorService.submit(new Runnable() {
-        
+
         @Override
         public void run() {
           stat.updateWith(getRegionStats(stat.getRegionInfo(), stat.getServerName()));
         }
       }));
     }
-    
+
     for (Future<?> future : futures) {
       future.get();
     }
@@ -92,8 +91,8 @@ public class HBaseHdfsInfo {
   private RegionStats loadRegionStats(final HRegionInfo regionInfo, final ServerName serverName) {
     final Path regionPath = new Path(HTableDescriptor.getTableDir(rootPath, regionInfo.getTableName()), regionInfo.getEncodedName());
     final RegionStats result = new RegionStats(regionInfo, serverName);
-    
-    
+
+
     try {
       long totalSize = 0;
       for (FileStatus stat : fileSystem.listStatus(regionPath, pathFilter)) {
@@ -149,6 +148,7 @@ public class HBaseHdfsInfo {
     public VisibleDirectory(FileSystem arg0) {
       super(arg0);
     }
+
     @Override
     public boolean accept(Path p) {
       return super.accept(p) && !p.getName().startsWith(".");

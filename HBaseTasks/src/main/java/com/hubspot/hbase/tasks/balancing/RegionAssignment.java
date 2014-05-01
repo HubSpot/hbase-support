@@ -29,7 +29,7 @@ public class RegionAssignment {
   @Override
   public boolean equals(final Object o) {
     if (!(o instanceof RegionAssignment)) return false;
-    final RegionAssignment other = (RegionAssignment)o;
+    final RegionAssignment other = (RegionAssignment) o;
     return Objects.equal(other.regionStats, regionStats) && Objects.equal(other.newServer, newServer);
   }
 

@@ -2,6 +2,7 @@ package com.hubspot.hbase.tasks.balancing.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
@@ -9,12 +10,16 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import com.google.common.base.Throwables;
 import com.hubspot.hbase.tasks.balancing.annealing.AcceptanceFunction;
 import com.hubspot.hbase.tasks.balancing.annealing.StandardAcceptanceFunction;
 import com.hubspot.hbase.tasks.balancing.annealing.StandardTemperatureFunction;
 import com.hubspot.hbase.tasks.balancing.annealing.TemperatureFunction;
-import com.hubspot.hbase.tasks.balancing.annealing.perturbers.*;
+import com.hubspot.hbase.tasks.balancing.annealing.perturbers.CombinedPerturber;
+import com.hubspot.hbase.tasks.balancing.annealing.perturbers.GreedyPerturber;
+import com.hubspot.hbase.tasks.balancing.annealing.perturbers.Perturber;
+import com.hubspot.hbase.tasks.balancing.annealing.perturbers.RandomPerturber;
+import com.hubspot.hbase.tasks.balancing.annealing.perturbers.SomewhatGreedyPerturber;
+import com.hubspot.hbase.tasks.balancing.annealing.perturbers.TableGreedyPerturber;
 import com.hubspot.hbase.tasks.balancing.cost.CostFunction;
 import com.hubspot.hbase.tasks.balancing.cost.CostFunctionFactories;
 import com.hubspot.hbase.tasks.balancing.cost.CostFunctionFactories.CostFunctionFactory;
@@ -39,24 +44,24 @@ public class OptimizationModule extends AbstractModule {
   public static final String TOTAL_TRANSITIONS = "total transitions";
 
   private static final ImmutableMap<String, Class<? extends Perturber>> PERTURBERS = ImmutableMap.<String, Class<? extends Perturber>>builder()
-      .put("RandomPerturber", RandomPerturber.class)
-      .put("CombinedPerturber", CombinedPerturber.class)
-      .put("SomewhatGreedyPerturber", SomewhatGreedyPerturber.class)
-      .put("GreedyPerturber", GreedyPerturber.class)
-      .put("TableGreedyPerturber", TableGreedyPerturber.class)
-      .put("MigrationPerturber", MigrationPerturber.class)
-      .build();
+          .put("RandomPerturber", RandomPerturber.class)
+          .put("CombinedPerturber", CombinedPerturber.class)
+          .put("SomewhatGreedyPerturber", SomewhatGreedyPerturber.class)
+          .put("GreedyPerturber", GreedyPerturber.class)
+          .put("TableGreedyPerturber", TableGreedyPerturber.class)
+          .put("MigrationPerturber", MigrationPerturber.class)
+          .build();
 
   @Override
   protected void configure() {
     bind(AcceptanceFunction.class)
-        .annotatedWith(Names.named(COST_FUNCTION))
-        .to(StandardAcceptanceFunction.class);
+            .annotatedWith(Names.named(COST_FUNCTION))
+            .to(StandardAcceptanceFunction.class);
     bind(TemperatureFunction.class)
-        .annotatedWith(Names.named(TEMP_FUNCTION))
-        .toInstance(StandardTemperatureFunction.QUADRATIC_FUNCTION);
+            .annotatedWith(Names.named(TEMP_FUNCTION))
+            .toInstance(StandardTemperatureFunction.QUADRATIC_FUNCTION);
     bind(AcceptanceFunction.class)
-        .to(StandardAcceptanceFunction.class);
+            .to(StandardAcceptanceFunction.class);
   }
 
   @Singleton
@@ -77,7 +82,8 @@ public class OptimizationModule extends AbstractModule {
                                            Optional<String> costFunction) {
     final Map<String, Double> costFunctionArgs;
     try {
-      costFunctionArgs = ObjectMapperSingleton.MAPPER.readValue(costFunction.or(zkCostFunctionDefinition.get()), new TypeReference<Map<String, Double>>(){});
+      costFunctionArgs = ObjectMapperSingleton.MAPPER.readValue(costFunction.or(zkCostFunctionDefinition.get()), new TypeReference<Map<String, Double>>() {
+      });
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
@@ -103,14 +109,13 @@ public class OptimizationModule extends AbstractModule {
   }
 
 
-
   @Named(TOTAL_TRANSITIONS)
   @Provides
   public Integer providesTotalTransitions(@ForArg(HBaseTaskOption.MAX_TIME_MILLIS)
                                           Optional<Long> maxTimeMillis,
                                           @ForArg(HBaseTaskOption.MAX_TRANSITIONS_PER_MINUTE)
                                           Optional<Integer> transitionsPerMinute) {
-    return (int)(maxTimeMillis.get() * transitionsPerMinute.get() / TimeUnit.MINUTES.toMillis(1));
+    return (int) (maxTimeMillis.get() * transitionsPerMinute.get() / TimeUnit.MINUTES.toMillis(1));
   }
 
 }

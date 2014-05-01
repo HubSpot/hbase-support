@@ -1,12 +1,12 @@
 package com.hubspot.hbase.tasks.balancing.annealing;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import com.hubspot.hbase.tasks.balancing.Balancer;
 import com.hubspot.hbase.tasks.balancing.annealing.perturbers.Perturber;
 import com.hubspot.hbase.tasks.balancing.config.OptimizationModule;

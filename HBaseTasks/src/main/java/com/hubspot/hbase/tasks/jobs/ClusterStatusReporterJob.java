@@ -1,12 +1,15 @@
 package com.hubspot.hbase.tasks.jobs;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import com.hubspot.hbase.tasks.hdfs.HBaseHdfsInfo;
+import com.hubspot.hbase.tasks.hdfs.HdfsLocalityInfo;
+import com.hubspot.hbase.tasks.models.RegionStats;
 import com.hubspot.liveconfig.value.Value;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,15 +20,11 @@ import org.apache.hadoop.hbase.HServerLoad.RegionLoad;
 import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.Multimap;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
-import com.hubspot.hbase.tasks.hdfs.HBaseHdfsInfo;
-import com.hubspot.hbase.tasks.hdfs.HdfsLocalityInfo;
-import com.hubspot.hbase.tasks.models.RegionStats;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ClusterStatusReporterJob implements Runnable {
   private static final Log LOG = LogFactory.getLog(ClusterStatusReporterJob.class);

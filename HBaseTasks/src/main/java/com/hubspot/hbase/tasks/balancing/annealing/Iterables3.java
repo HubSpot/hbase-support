@@ -6,7 +6,8 @@ import java.util.Random;
 public final class Iterables3 {
   private static final Random random = new Random();
 
-  private Iterables3() {}
+  private Iterables3() {
+  }
 
   public static <T> T pickRandom(Iterable<T> iterable) {
     final Iterator<T> iterator = iterable.iterator();

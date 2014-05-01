@@ -1,19 +1,19 @@
 package com.hubspot.hbase.tasks.balancing.annealing.perturbers;
 
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimaps;
-import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
+import com.google.common.primitives.Doubles;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Doubles;
-import com.google.common.collect.Sets;
 import com.hubspot.hbase.tasks.balancing.annealing.AssignmentConfig;
 import com.hubspot.hbase.tasks.balancing.config.OptimizationModule;
 import com.hubspot.hbase.tasks.balancing.cost.CostFunction;
@@ -40,7 +40,8 @@ public class TableGreedyPerturber implements Perturber {
   private Set<String> seenTables = Sets.newHashSet();
   private Set<String> allTables;
   private final GreedyPerturber greedyPerturber;
-  @Inject @ForArg(HBaseTaskOption.TABLE)
+  @Inject
+  @ForArg(HBaseTaskOption.TABLE)
   Optional<String> table;
 
 
@@ -81,8 +82,8 @@ public class TableGreedyPerturber implements Perturber {
 
       while (true) {
         Optional<AssignmentConfig> maybeConfig = initial.assign(
-            pickRandom(regionsForTableOnServer),
-            orderedCosts.get(orderedCosts.size() - 1).getKey()
+                pickRandom(regionsForTableOnServer),
+                orderedCosts.get(orderedCosts.size() - 1).getKey()
         );
         if (maybeConfig.isPresent()) {
           return maybeConfig.get();
@@ -105,7 +106,7 @@ public class TableGreedyPerturber implements Perturber {
 
     for (final ServerName server : regions.keySet()) {
       final List<RegionStats> regionsForTable = ImmutableList.copyOf(Iterables.filter(regions.get(server),
-          Predicates.compose(Predicates.equalTo(tableName), REGION_STATS_TO_TABLE)));
+              Predicates.compose(Predicates.equalTo(tableName), REGION_STATS_TO_TABLE)));
       result.put(server, costFunction.getServerCost(server, regionsForTable));
     }
 
@@ -136,9 +137,9 @@ public class TableGreedyPerturber implements Perturber {
         seenTables.clear();
       }
 
-			currentTable = pickRandom(Iterables.limit(orderedCosts,
-					Math.min(orderedCosts.size(), Math.max(2, (int)(temp * orderedCosts.size())))
-			)).getKey();
+      currentTable = pickRandom(Iterables.limit(orderedCosts,
+              Math.min(orderedCosts.size(), Math.max(2, (int) (temp * orderedCosts.size())))
+      )).getKey();
 
       for (final Map.Entry<String, Double> tableCost : orderedCosts) {
         final String table = tableCost.getKey();

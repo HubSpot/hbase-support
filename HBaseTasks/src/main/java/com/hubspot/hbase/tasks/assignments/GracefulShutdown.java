@@ -1,10 +1,10 @@
 package com.hubspot.hbase.tasks.assignments;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
-import com.google.common.collect.Lists;
 import com.hubspot.hbase.tasks.compaction.SlowCompactionManager;
 import com.hubspot.hbase.tasks.compaction.TransitionWatcher;
 import com.hubspot.hbase.tasks.config.commandargs.ForArg;
@@ -29,14 +29,18 @@ public class GracefulShutdown {
   private final SlowCompactionManager compactor;
   private final HdfsLocalityInfo hdfsLocalityInfo;
   private final HBaseHdfsInfo hbaseHdfsInfo;
-  
-  @Inject @ForArg(HBaseTaskOption.MAX_TRANSITIONS)
+
+  @Inject
+  @ForArg(HBaseTaskOption.MAX_TRANSITIONS)
   private Optional<Integer> maxSimultaneousTransitions;
-  @Inject @ForArg(HBaseTaskOption.SERVER_NAME)
+  @Inject
+  @ForArg(HBaseTaskOption.SERVER_NAME)
   private Optional<String> serverName;
-  @Inject @ForArg(HBaseTaskOption.COMPACT_POST_MOVE)
+  @Inject
+  @ForArg(HBaseTaskOption.COMPACT_POST_MOVE)
   private Optional<Boolean> compactPostMove;
-  @Inject @ForArg(HBaseTaskOption.OUTPUT_FILE)
+  @Inject
+  @ForArg(HBaseTaskOption.OUTPUT_FILE)
   private Optional<String> outputFile;
 
 
@@ -51,17 +55,17 @@ public class GracefulShutdown {
   public void gracefullyShutdown() throws Exception {
     final Set<String> servers = HBaseTaskOption.getCommaSeparatedAsList(serverName);
     final Multimap<ServerName, HRegionInfo> serverRegions = hBaseAdminWrapper.getRegionInfosByServer(true);
-    
+
     final List<HRegionInfo> regions = Lists.newArrayList();
     final Map<HRegionInfo, ServerName> currentAssignments = Maps.newHashMap();
-    
+
     final List<String> serverNames = Lists.newArrayList();
     final List<ServerName> encodedServers = Lists.newArrayList();
-    
+
     for (final ServerName server : serverRegions.keySet()) {
       if (servers.contains(server.getHostname())) {
         regions.addAll(serverRegions.get(server));
-        
+
         if (outputFile.isPresent()) {
           for (HRegionInfo region : serverRegions.get(server)) {
             currentAssignments.put(region, server);
@@ -84,7 +88,7 @@ public class GracefulShutdown {
     Collections.shuffle(encodedServers);
 
     int i = 0;
-    
+
     Map<HRegionInfo, ServerName> transitions = Maps.newHashMap();
     if (compactPostMove.or(false)) {
       Multimap<ServerName, RegionStats> regionStats = RegionStats.regionInfoToStats(serverRegions);
@@ -92,7 +96,7 @@ public class GracefulShutdown {
       hbaseHdfsInfo.annotateRegionsWithHdfsInfoInPlace(regionStats);
       TransitionWatcher.getStartWatcherThread(hBaseAdminWrapper.get(), compactor, regionStats.values(), transitions);
     }
-    
+
     Optional<OutputStreamWriter> writer = Optional.absent();
     if (outputFile.isPresent()) {
       writer = Optional.of(IO.writerForFile(outputFile.get(), true));
@@ -108,23 +112,23 @@ public class GracefulShutdown {
         }
         System.out.println(String.format("Moving %s::%s -> %s", region.getTableNameAsString(), region.getEncodedName(), otherServer.getHostname()));
         hBaseAdminWrapper.move(region, otherServer);
-        
+
         if (writer.isPresent()) {
           IO.writeRegionAndServer(region, currentAssignments.get(region), writer.get());
           writer.get().flush();
         }
-        
+
       } catch (Throwable t) {
         throw new RuntimeException(t);
       }
 
       i++;
     }
-    
+
     if (writer.isPresent()) {
       writer.get().close();
     }
-    
+
     if (compactPostMove.or(false)) {
       compactor.awaitCompactions();
     }

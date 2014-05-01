@@ -1,5 +1,12 @@
 package com.hubspot.hbase.utils;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
+import com.google.common.io.Files;
+import com.google.common.io.OutputSupplier;
+import org.apache.hadoop.hbase.HRegionInfo;
+import org.apache.hadoop.hbase.ServerName;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -9,18 +16,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.hadoop.hbase.HRegionInfo;
-import org.apache.hadoop.hbase.ServerName;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.Maps;
-import com.google.common.io.Files;
-import com.google.common.io.OutputSupplier;
-
 public class IO {
 
   private static Charset CHARSET = Charsets.UTF_8;
-  
+
   public static void appendRegionsToFile(Map<HRegionInfo, ServerName> regions, String filename) throws IOException {
     writeRegionsToFile(regions, filename, true);
   }
@@ -38,7 +37,7 @@ public class IO {
 
     writer.close();
   }
-  
+
   public static OutputStreamWriter writerForFile(String filename, boolean append) throws IOException {
     OutputSupplier<OutputStreamWriter> os = Files.newWriterSupplier(new File(filename), CHARSET, append);
     return os.getOutput();

@@ -2,6 +2,7 @@ package com.hubspot.hbase.tasks.compaction;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
@@ -11,7 +12,6 @@ import com.google.common.primitives.Doubles;
 import com.google.common.util.concurrent.Atomics;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.common.base.Stopwatch;
 import com.hubspot.hbase.tasks.config.commandargs.ForArg;
 import com.hubspot.hbase.tasks.config.commandargs.HBaseTaskOption;
 import com.hubspot.hbase.tasks.helpers.jmx.RegionServerJMXInfo;
@@ -23,7 +23,11 @@ import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.ServerName;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -34,19 +38,24 @@ import java.util.concurrent.atomic.AtomicReference;
 @Singleton
 public class SlowCompactionManager {
   private final Log LOG = LogFactory.getLog(SlowCompactionManager.class);
- 
 
-  @Inject @ForArg(HBaseTaskOption.COMPACTION_QUIET_TIME)
+
+  @Inject
+  @ForArg(HBaseTaskOption.COMPACTION_QUIET_TIME)
   private Optional<Integer> compactionQuietTime;
-  @Inject @ForArg(HBaseTaskOption.SIMULTANEOUS_COMPACTIONS)
+  @Inject
+  @ForArg(HBaseTaskOption.SIMULTANEOUS_COMPACTIONS)
   private Optional<Integer> simultaneousCompactions;
-  @Inject @ForArg(HBaseTaskOption.MAX_TIME_MILLIS)
+  @Inject
+  @ForArg(HBaseTaskOption.MAX_TIME_MILLIS)
   private Optional<Long> maxCompactionTimeMillis;
-  @Inject @ForArg(HBaseTaskOption.COMPACTION_TYPE)
+  @Inject
+  @ForArg(HBaseTaskOption.COMPACTION_TYPE)
   private Optional<String> compactionTypeOption;
-  @Inject @ForArg(HBaseTaskOption.COMPACT_THRESHOLD)
+  @Inject
+  @ForArg(HBaseTaskOption.COMPACT_THRESHOLD)
   private Optional<Double> compactThreshold;
-  
+
   private final HBaseAdminWrapper hBaseAdminWrapper;
   private final RegionServerJMXInfo regionServerJMXInfo;
   private final Map<ServerName, BlockingDeque<HRegionInfo>> serversToRegions;
@@ -61,7 +70,7 @@ public class SlowCompactionManager {
 
   private List<Thread> compactionThreads;
 
- 
+
   @Inject
   public SlowCompactionManager(final HBaseAdminWrapper hBaseAdminWrapper, final RegionServerJMXInfo regionServerJMXInfo) {
     this.hBaseAdminWrapper = hBaseAdminWrapper;
@@ -71,11 +80,11 @@ public class SlowCompactionManager {
 
   public synchronized void startCompactionQueue() throws Exception {
     if (started.getCount() < 1) return;
-   
+
 
     this.compactionThreads = Lists.newArrayList();
     final Collection<ServerName> servers = hBaseAdminWrapper.get().getClusterStatus().getServers();
-    for (final ServerName server: servers) {
+    for (final ServerName server : servers) {
       addServer(server);
     }
     started.countDown();
@@ -110,7 +119,7 @@ public class SlowCompactionManager {
     serversToRegions.get(serverName).addLast(regionToCompact);
     awaitingCompactions.incrementAndGet();
   }
-  
+
   public void compactRegionOnServerIfNecessary(final RegionStats stats, final ServerName serverName) throws IOException {
     if (stats.localityFactor(serverName) > compactThreshold.get()) {
       System.out.println(String.format(" Not compacting %s on %s because it's local.", stats.getRegionInfo(), serverName));
@@ -219,8 +228,7 @@ public class SlowCompactionManager {
       boolean major = "MAJOR".equals(compactionTypeOption.get().toUpperCase());
       if (major) {
         hBaseAdminWrapper.get().majorCompact(region.getRegionName());
-      }
-      else {
+      } else {
         hBaseAdminWrapper.get().compact(region.getRegionName());
       }
       Thread.sleep(200);

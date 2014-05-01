@@ -33,7 +33,7 @@ public class CommandLineArgModule extends AbstractModule {
 
   @SuppressWarnings("unchecked")
   private <T> void bindValue(Class<T> clazz, HBaseTaskOption taskOption, CommandLine commandLine) {
-    Optional<T> value = Optional.of((T)getValue(commandLine, taskOption));
+    Optional<T> value = Optional.of((T) getValue(commandLine, taskOption));
     bind(typeLiterals.get(taskOption.getTargetClass())).annotatedWith(ForArgs.forArg(taskOption)).toInstance(value);
   }
 
@@ -62,12 +62,19 @@ public class CommandLineArgModule extends AbstractModule {
   }
 
   private static final Map<Class, TypeLiteral> typeLiterals = ImmutableMap.<Class, TypeLiteral>builder()
-          .put(Integer.class, new TypeLiteral<Optional<Integer>>(){})
-          .put(Double.class, new TypeLiteral<Optional<Double>>(){})
-          .put(String.class, new TypeLiteral<Optional<String>>(){})
-          .put(Boolean.class, new TypeLiteral<Optional<Boolean>>(){})
-          .put(Long.class, new TypeLiteral<Optional<Long>>(){})
-          .put(Short.class, new TypeLiteral<Optional<Short>>(){})
-          .put(Float.class, new TypeLiteral<Optional<Float>>(){})
+          .put(Integer.class, new TypeLiteral<Optional<Integer>>() {
+          })
+          .put(Double.class, new TypeLiteral<Optional<Double>>() {
+          })
+          .put(String.class, new TypeLiteral<Optional<String>>() {
+          })
+          .put(Boolean.class, new TypeLiteral<Optional<Boolean>>() {
+          })
+          .put(Long.class, new TypeLiteral<Optional<Long>>() {
+          })
+          .put(Short.class, new TypeLiteral<Optional<Short>>() {
+          })
+          .put(Float.class, new TypeLiteral<Optional<Float>>() {
+          })
           .build();
 }

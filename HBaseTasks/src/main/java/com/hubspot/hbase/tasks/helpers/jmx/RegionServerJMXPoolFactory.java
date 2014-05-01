@@ -5,7 +5,8 @@ import org.apache.commons.pool.KeyedObjectPool;
 import org.apache.commons.pool.impl.GenericKeyedObjectPool;
 
 class RegionServerJMXPoolFactory extends BaseKeyedPoolableObjectFactory<String, RegionServerJMXHostInfo> {
-  public RegionServerJMXPoolFactory() {  }
+  public RegionServerJMXPoolFactory() {
+  }
 
   @Override
   public RegionServerJMXHostInfo makeObject(final String key) throws Exception {

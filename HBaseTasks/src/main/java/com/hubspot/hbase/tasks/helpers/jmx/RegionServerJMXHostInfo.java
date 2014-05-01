@@ -11,7 +11,6 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 /**
  * A wrapper around

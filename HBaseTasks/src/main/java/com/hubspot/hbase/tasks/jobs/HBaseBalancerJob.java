@@ -1,7 +1,7 @@
 package com.hubspot.hbase.tasks.jobs;
 
-import com.google.inject.Inject;
 import com.google.common.base.Throwables;
+import com.google.inject.Inject;
 import com.hubspot.hbase.tasks.balancing.BalanceRunner;
 
 

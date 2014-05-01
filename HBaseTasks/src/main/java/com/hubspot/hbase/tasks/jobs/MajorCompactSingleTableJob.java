@@ -23,9 +23,11 @@ public class MajorCompactSingleTableJob implements Runnable {
   public static final String LONG_OPT = "majorCompactTable";
   public static final String DESCRIPTION = "Requests major compaction on a single table";
 
-  @Inject @ForArg(HBaseTaskOption.TABLE)
+  @Inject
+  @ForArg(HBaseTaskOption.TABLE)
   private Optional<String> tableToCompact;
-  @Inject @ForArg(HBaseTaskOption.ALL_REGIONS)
+  @Inject
+  @ForArg(HBaseTaskOption.ALL_REGIONS)
   private Optional<Boolean> allRegions;
 
   private final HBaseAdminWrapper hBaseAdminWrapper;

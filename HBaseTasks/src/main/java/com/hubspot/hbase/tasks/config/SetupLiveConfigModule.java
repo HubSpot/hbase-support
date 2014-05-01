@@ -1,7 +1,6 @@
 package com.hubspot.hbase.tasks.config;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
 import com.hubspot.liveconfig.LiveConfig;
 import com.hubspot.liveconfig.LiveConfigModule;
 

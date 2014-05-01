@@ -1,19 +1,18 @@
 package com.hubspot.hbase.tasks.jobs;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.inject.Inject;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
+import com.google.inject.Inject;
 import com.hubspot.hbase.tasks.compaction.SlowCompactionManager;
 import com.hubspot.hbase.tasks.config.commandargs.ForArg;
 import com.hubspot.hbase.tasks.config.commandargs.HBaseTaskOption;
 import com.hubspot.hbase.tasks.hdfs.HdfsLocalityInfo;
 import com.hubspot.hbase.tasks.load.RegionLoadEstimation;
 import com.hubspot.hbase.tasks.models.RegionStats;
-
 import org.apache.hadoop.hbase.HBaseAdminWrapper;
 import org.apache.hadoop.hbase.ServerName;
 
@@ -32,17 +31,19 @@ public class CompactionJob implements Runnable {
   private final RegionLoadEstimation regionLoadEstimation;
   private final SlowCompactionManager compactor;
 
-  @Inject @ForArg(HBaseTaskOption.REVERSE_LOCALITY)
+  @Inject
+  @ForArg(HBaseTaskOption.REVERSE_LOCALITY)
   Optional<Boolean> reverseLocality;
-  
-  @Inject @ForArg(HBaseTaskOption.TABLE)
+
+  @Inject
+  @ForArg(HBaseTaskOption.TABLE)
   private Optional<String> tableToCompact;
 
   @Inject
   public CompactionJob(final HBaseAdminWrapper hBaseAdminWrapper,
-                                   final HdfsLocalityInfo hdfsLocalityInfo,
-                                   final RegionLoadEstimation regionLoadEstimation,
-                                   final SlowCompactionManager compactor) {
+                       final HdfsLocalityInfo hdfsLocalityInfo,
+                       final RegionLoadEstimation regionLoadEstimation,
+                       final SlowCompactionManager compactor) {
     this.hBaseAdminWrapper = hBaseAdminWrapper;
     this.hdfsLocalityInfo = hdfsLocalityInfo;
     this.regionLoadEstimation = regionLoadEstimation;
@@ -62,8 +63,7 @@ public class CompactionJob implements Runnable {
     final Multimap<ServerName, RegionStats> regions;
     if (tableToCompact.isPresent()) {
       regions = RegionStats.regionInfoToStats(hBaseAdminWrapper.getRegionInfosForTableByServer(tableToCompact.get()));
-    }
-    else {
+    } else {
       regions = RegionStats.regionInfoToStats(hBaseAdminWrapper.getRegionInfosByServer(true));
     }
     regionLoadEstimation.annotateRegionsWithLoadInPlace(regions);
@@ -71,8 +71,7 @@ public class CompactionJob implements Runnable {
     List<RegionStats> regionList = Lists.newArrayList(regions.values());
     if (reverseLocality.or(false)) {
       regionList = orderByReverseLocality(regions);
-    }
-    else {
+    } else {
       regionList = Lists.newArrayList(regions.values());
       Collections.shuffle(regionList);
       Collections.sort(regionList, new Comparator<RegionStats>() {
@@ -84,7 +83,7 @@ public class CompactionJob implements Runnable {
     }
     compactor.compactAllRegions(regionList);
   }
-  
+
   private List<RegionStats> orderByReverseLocality(final Multimap<ServerName, RegionStats> regions) throws Exception {
     List<RegionStats> regionsList = Lists.newArrayList(regions.values());
 

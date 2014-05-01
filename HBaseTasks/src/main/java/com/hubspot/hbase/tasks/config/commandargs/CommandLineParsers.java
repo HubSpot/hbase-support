@@ -7,7 +7,8 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 
 class CommandLineParsers {
-  private CommandLineParsers() {}
+  private CommandLineParsers() {
+  }
 
   private static final Function<String, Integer> TO_INTEGER = new Function<String, Integer>() {
     @Override

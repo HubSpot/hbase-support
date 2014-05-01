@@ -12,7 +12,7 @@ import java.io.IOException;
  * keep a singleton pool of connections.
  * (This also handles the case where in a flakey environment
  * the jmx connections might die and come back.)
- *
+ * <p/>
  * Use {@link RegionServerJMXPoolFactory} to reference these.
  */
 public class RegionServerJMXInfo implements Closeable {
@@ -48,7 +48,7 @@ public class RegionServerJMXInfo implements Closeable {
   public int getCompactionQueueSize(final String hostName) {
     RegionServerJMXHostInfo hostInfo = null;
     try {
-        hostInfo = pool.borrowObject(hostName);
+      hostInfo = pool.borrowObject(hostName);
       return hostInfo.getCompactionQueueSize();
     } catch (Exception e) {
       try {

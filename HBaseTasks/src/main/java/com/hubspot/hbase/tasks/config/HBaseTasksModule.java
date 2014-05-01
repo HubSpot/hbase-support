@@ -1,11 +1,11 @@
 package com.hubspot.hbase.tasks.config;
 
+import com.google.common.base.Throwables;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import com.google.common.base.Throwables;
 import com.hubspot.hbase.tasks.balancing.Balancer;
 import com.hubspot.hbase.tasks.balancing.annealing.AnnealingBalancer;
 import com.hubspot.hbase.tasks.balancing.config.OptimizationModule;
@@ -20,7 +20,7 @@ import java.io.IOException;
 public class HBaseTasksModule extends AbstractModule {
   public static final String ACTIVE_BALANCER = "active balancer";
   public static final String HBASE_PATH = "hbase path";
-  
+
   @Override
   protected void configure() {
     install(new SetupLiveConfigModule());

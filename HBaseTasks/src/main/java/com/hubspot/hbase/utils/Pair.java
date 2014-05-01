@@ -1,9 +1,9 @@
 package com.hubspot.hbase.utils;
 
-import javax.annotation.Nullable;
-
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+
+import javax.annotation.Nullable;
 
 
 /**
@@ -11,7 +11,6 @@ import com.google.common.base.Objects;
  *
  * @param <A> The type of the 1st item in the pair.
  * @param <B> The type of the 2nd item in the pair.
- *
  * @author William Farner
  */
 public class Pair<A, B> {
@@ -24,7 +23,7 @@ public class Pair<A, B> {
   /**
    * Creates a new pair.
    *
-   * @param first The first value.
+   * @param first  The first value.
    * @param second The second value.
    */
   public Pair(@Nullable A first, @Nullable B second) {
@@ -44,8 +43,12 @@ public class Pair<A, B> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == this) { return true; }
-    if (!(o instanceof Pair)) { return false; }
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof Pair)) {
+      return false;
+    }
 
     Pair that = (Pair) o;
     return Objects.equal(this.first, that.first) && Objects.equal(this.second, that.second);
@@ -69,7 +72,8 @@ public class Pair<A, B> {
    */
   public static <S> Function<Pair<? extends S, ?>, S> first() {
     return new Function<Pair<? extends S, ?>, S>() {
-      @Override public S apply(Pair<? extends S, ?> pair) {
+      @Override
+      public S apply(Pair<? extends S, ?> pair) {
         return pair.first;
       }
     };
@@ -83,7 +87,8 @@ public class Pair<A, B> {
    */
   public static <T> Function<Pair<?, ? extends T>, T> second() {
     return new Function<Pair<?, ? extends T>, T>() {
-      @Override public T apply(Pair<?, ? extends T> pair) {
+      @Override
+      public T apply(Pair<?, ? extends T> pair) {
         return pair.second;
       }
     };
@@ -92,8 +97,8 @@ public class Pair<A, B> {
   /**
    * Convenience method to create a pair.
    *
-   * @param a The first value.
-   * @param b The second value.
+   * @param a   The first value.
+   * @param b   The second value.
    * @param <A> The type of the 1st item in the pair.
    * @param <B> The type of the 2nd item in the pair.
    * @return A new pair of [a, b].

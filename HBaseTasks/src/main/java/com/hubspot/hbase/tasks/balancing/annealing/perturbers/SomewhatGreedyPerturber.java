@@ -1,12 +1,12 @@
 package com.hubspot.hbase.tasks.balancing.annealing.perturbers;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.hubspot.hbase.tasks.balancing.annealing.AssignmentConfig;
 import com.hubspot.hbase.tasks.balancing.config.OptimizationModule;
 import com.hubspot.hbase.tasks.balancing.cost.CostFunction;
@@ -47,7 +47,7 @@ public class SomewhatGreedyPerturber implements Perturber {
     });
 
     int heaviestServerIndex = orderedCosts.size() - 1;
-    heaviestServerIndex -= random.nextInt(Math.max(1, Math.min(orderedCosts.size() - 1, (int)(temp * orderedCosts.size() * .4))));
+    heaviestServerIndex -= random.nextInt(Math.max(1, Math.min(orderedCosts.size() - 1, (int) (temp * orderedCosts.size() * .4))));
     final ServerName lightestServer = orderedCosts.get(0).getKey();
     final ServerName heaviestServer = orderedCosts.get(heaviestServerIndex).getKey();
 
@@ -55,7 +55,7 @@ public class SomewhatGreedyPerturber implements Perturber {
       final Collection<RegionStats> regions = initial.getAssignmentsByServer().get(heaviestServer);
       final Set<RegionStats> subList = Sets.newHashSet();
 
-      final int targetSize = Math.min(Math.max((int)((1 - temp) * regions.size()), 1), regions.size());
+      final int targetSize = Math.min(Math.max((int) ((1 - temp) * regions.size()), 1), regions.size());
 
       for (int j = 0; j < 1000; ++j) {
         subList.add(pickRandom(regions));

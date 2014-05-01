@@ -30,8 +30,7 @@ public enum HBaseTaskOption {
   TABLE("table", "table", "The name of the table to operate on."),
   COMPACTION_TYPE(String.class, "compactionType", "compactionType", "Type of compaction to run: minor or major", "major"),
   COMPACT_POST_MOVE(Boolean.class, "compactPostMove", "compactPostMove", "If true, automatically compact a region after moving to another server, unless @compactThreshold is reached.", false),
-  EMPTY_REGIONS_ONLY(Boolean.class, "emptyRegionsOnly", "emptyRegionsOnly", "JOB: mergeRegionsInTable. If true, merger will only merge empty regions with a nearby non-empty region", false)
-  ;
+  EMPTY_REGIONS_ONLY(Boolean.class, "emptyRegionsOnly", "emptyRegionsOnly", "JOB: mergeRegionsInTable. If true, merger will only merge empty regions with a nearby non-empty region", false);
 
   private final Class<?> targetClass;
   private final String shortName;
@@ -70,7 +69,7 @@ public enum HBaseTaskOption {
   public Class<?> getTargetClass() {
     return targetClass;
   }
-  
+
   public static Set<String> getCommaSeparatedAsList(Optional<String> string) {
     Set<String> values = Sets.newHashSet();
     if (string.isPresent()) {
@@ -82,17 +81,17 @@ public enum HBaseTaskOption {
         values.add(string.get());
       }
     }
-    
+
     return values;
   }
-  
+
   public static void validateConflictingArgs(String message, Optional<?>... args) {
     boolean exist = false;
     for (Optional<?> arg : args) {
       if (exist && arg.isPresent()) {
         throw new IllegalArgumentException(message);
       }
-      
+
       exist |= arg.isPresent();
     }
   }

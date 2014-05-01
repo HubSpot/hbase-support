@@ -1,13 +1,13 @@
 package com.hubspot.hbase.tasks.hdfs;
 
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Multimap;
-import com.google.inject.Inject;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 import com.hubspot.hbase.tasks.config.HBaseTasksModule;
 import com.hubspot.hbase.tasks.models.HdfsBlockInfo;
 import com.hubspot.hbase.tasks.models.RegionHdfsInfo;
@@ -22,7 +22,12 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,10 +82,11 @@ public class HdfsLocalityInfo {
       if (p.exitValue() != 0) {
         System.err.println("Error running cmd: " + Arrays.asList(cmd));
         for (int c = p.getErrorStream().read(); c != -1; c = p.getErrorStream().read()) {
-          System.err.print((char)c);
+          System.err.print((char) c);
         }
       }
-    } catch (Throwable t) {}
+    } catch (Throwable t) {
+    }
   }
 
   private Map<Path, RegionStats> computeHdfsPaths(final Collection<RegionStats> regions) {

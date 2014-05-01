@@ -32,8 +32,8 @@ public class HdfsBlockInfo {
   @Override
   public String toString() {
     return Objects.toStringHelper(this)
-	    .add("size", size)
-	    .add("replicas", replicas)
-	    .toString();
+            .add("size", size)
+            .add("replicas", replicas)
+            .toString();
   }
 }

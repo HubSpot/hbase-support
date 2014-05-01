@@ -1,17 +1,5 @@
 package org.apache.hadoop.hbase.regionserver;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -24,6 +12,18 @@ import org.apache.hadoop.hbase.backup.HFileArchiver;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.FSUtils;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class MergeTools {
   /**
@@ -74,7 +74,7 @@ public class MergeTools {
 
     // Ensure contiguous.  That is, the end key of one region equals the start of the next
     for (int i = 0; i < regions.length - 1; i++) {
-      if (Bytes.compareTo(regions[i].getEndKey(), regions[i+1].getStartKey()) != 0) {
+      if (Bytes.compareTo(regions[i].getEndKey(), regions[i + 1].getStartKey()) != 0) {
         throw new IllegalArgumentException("Cannot merge non-contiguous regions");
       }
     }
@@ -133,7 +133,7 @@ public class MergeTools {
 
     String encodedName = newRegionInfo.getEncodedName();
     Path newRegionDir = HRegion.getRegionDir(regions[0].getTableDir(), encodedName);
-    if(fs.exists(newRegionDir)) {
+    if (fs.exists(newRegionDir)) {
       throw new IOException("Cannot merge; target file collision at " +
               newRegionDir);
     }
@@ -145,13 +145,13 @@ public class MergeTools {
             Bytes.toStringBinary(endKey) + ">");
 
     // Move HStoreFiles under new region directory
-    Map<byte [], List<StoreFile>> byFamily = new TreeMap<byte [], List<StoreFile>>(Bytes.BYTES_COMPARATOR);
+    Map<byte[], List<StoreFile>> byFamily = new TreeMap<byte[], List<StoreFile>>(Bytes.BYTES_COMPARATOR);
     for (HRegion region : regions) {
       byFamily = filesByFamily(byFamily, region.close());
     }
 
-    for (Map.Entry<byte [], List<StoreFile>> es : byFamily.entrySet()) {
-      byte [] colFamily = es.getKey();
+    for (Map.Entry<byte[], List<StoreFile>> es : byFamily.entrySet()) {
+      byte[] colFamily = es.getKey();
       HRegion.makeColumnFamilyDirs(fs, tableDir, newRegionInfo, colFamily);
       // Because we compacted the source regions we should have no more than two
       // HStoreFiles per family and there will be no reference store
@@ -167,7 +167,7 @@ public class MergeTools {
         }
       }
 
-      for (StoreFile hsf: srcFiles) {
+      for (StoreFile hsf : srcFiles) {
         StoreFile.rename(fs, hsf.getPath(), StoreFile.getUniqueFile(fs, Store.getStoreHomedir(tableDir, newRegionInfo.getEncodedName(), colFamily)));
       }
     }
@@ -242,10 +242,10 @@ public class MergeTools {
    * @param family
    * @return Returns <code>byFamily</code>
    */
-  private static Map<byte [], List<StoreFile>> filesByFamily(
-          Map<byte [], List<StoreFile>> byFamily, List<StoreFile> storeFiles) {
-    for (StoreFile src: storeFiles) {
-      byte [] family = src.getFamily();
+  private static Map<byte[], List<StoreFile>> filesByFamily(
+          Map<byte[], List<StoreFile>> byFamily, List<StoreFile> storeFiles) {
+    for (StoreFile src : storeFiles) {
+      byte[] family = src.getFamily();
       List<StoreFile> v = byFamily.get(family);
       if (v == null) {
         v = new ArrayList<StoreFile>();

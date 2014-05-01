@@ -1,12 +1,12 @@
 package com.hubspot.hbase.tasks.balancing.annealing.perturbers;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.primitives.Doubles;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.hubspot.hbase.tasks.balancing.annealing.AssignmentConfig;
 import com.hubspot.hbase.tasks.balancing.config.OptimizationModule;
 import com.hubspot.hbase.tasks.balancing.cost.CostFunction;

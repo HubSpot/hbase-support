@@ -1,26 +1,24 @@
 package com.hubspot.hbase.tasks.models;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.hadoop.hbase.HRegionInfo;
-import org.apache.hadoop.hbase.ServerName;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.ComparisonChain;
+import org.apache.hadoop.hbase.HRegionInfo;
+import org.apache.hadoop.hbase.ServerName;
 
 import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.List;
 
 
 @SuppressWarnings("serial")
@@ -122,7 +120,7 @@ public class RegionStats implements Serializable, Comparable<RegionStats> {
   public double localityFactor() {
     return localityFactor(serverName);
   }
-  
+
   public double localityFactor(final ServerName targetServer) {
     Preconditions.checkState(size.isPresent(), "Need size information to get locality factor.");
     return size.get() == 0L ? 1.0 : ((double) (size.get() - transferCost(targetServer))) / size.get();
@@ -136,7 +134,7 @@ public class RegionStats implements Serializable, Comparable<RegionStats> {
             .add("modificationTime", modificationTime)
             .add("serverName", serverName)
             .add("loadWeight", loadWeight)
-	          .add("serverStorage", serverStorage)
+            .add("serverStorage", serverStorage)
             .toString();
   }
 
@@ -162,7 +160,7 @@ public class RegionStats implements Serializable, Comparable<RegionStats> {
     return new Comparator<RegionStats>() {
       @Override
       public int compare(final RegionStats firstRegionStats, final RegionStats secondRegionStats) {
-       return firstRegionStats.modificationTime.or(0L).compareTo(secondRegionStats.modificationTime.or(0L));
+        return firstRegionStats.modificationTime.or(0L).compareTo(secondRegionStats.modificationTime.or(0L));
       }
     };
   }
@@ -224,14 +222,14 @@ public class RegionStats implements Serializable, Comparable<RegionStats> {
   public boolean equals(final Object obj) {
     if (this == obj) return true;
     if (!(obj instanceof RegionStats)) return false;
-    return Objects.equal(((RegionStats)obj).regionInfo, regionInfo) && Objects.equal(((RegionStats)obj).serverName, serverName);
+    return Objects.equal(((RegionStats) obj).regionInfo, regionInfo) && Objects.equal(((RegionStats) obj).serverName, serverName);
   }
 
   @Override
   public int compareTo(final RegionStats regionStats) {
     return ComparisonChain.start()
-        .compare(regionInfo, regionStats.regionInfo)
-        .compare(serverName, regionStats.serverName)
-        .result();
+            .compare(regionInfo, regionStats.regionInfo)
+            .compare(serverName, regionStats.serverName)
+            .result();
   }
 }
