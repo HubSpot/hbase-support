@@ -4,10 +4,12 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.hubspot.hbase.tasks.hdfs.HBaseHdfsInfo;
 import com.hubspot.hbase.tasks.helpers.jmx.RegionServerJMXInfo;
 import com.hubspot.hbase.tasks.models.RegionStats;
+import com.hubspot.hbase.utils.ThreadPools;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.ServerName;
 
@@ -16,12 +18,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 public class RegionLoadEstimation {
   private final HBaseHdfsInfo hBaseHdfsInfo;
   private final RegionServerJMXInfo regionServerJMXInfo;
-  private static final ExecutorService jmxExecutorService = Executors.newFixedThreadPool(100);
+  private static final ExecutorService jmxExecutorService = ThreadPools.buildDefaultThreadPool(100, "region-load-estimate-%s");
 
   @Inject
   public RegionLoadEstimation(final HBaseHdfsInfo hBaseHdfsInfo, final RegionServerJMXInfo regionServerJMXInfo) {

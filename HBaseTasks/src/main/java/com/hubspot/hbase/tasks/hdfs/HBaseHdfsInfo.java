@@ -12,6 +12,7 @@ import com.google.inject.name.Named;
 import com.hubspot.hbase.tasks.config.HBaseTasksModule;
 import com.hubspot.hbase.tasks.models.RegionStats;
 import com.hubspot.hbase.utils.Pair;
+import com.hubspot.hbase.utils.ThreadPools;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -33,14 +34,13 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 @Singleton
 public class HBaseHdfsInfo {
   private static final Log LOG = LogFactory.getLog(HBaseHdfsInfo.class);
 
-  private static final ExecutorService executorService = Executors.newFixedThreadPool(100);
+  private static final ExecutorService executorService = ThreadPools.buildDefaultThreadPool(100, "hbase-hdfs-info-%s");
   private final LoadingCache<Pair<HRegionInfo, ServerName>, RegionStats> regionStatsCache;
   private final FileSystem fileSystem;
   private final Path rootPath;

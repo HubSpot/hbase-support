@@ -13,7 +13,11 @@ import com.hubspot.liveconfig.LiveConfig;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseAdminWrapper;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.MasterNotRunningException;
+import org.apache.hadoop.hbase.ZooKeeperConnectionException;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 
 import java.io.IOException;
 
@@ -37,6 +41,18 @@ public class HBaseTasksModule extends AbstractModule {
 
   @Provides
   @Singleton
+  public HBaseAdminWrapper providesHBaseAdminWrapper(Configuration configuration) {
+    try {
+      return new HBaseAdminWrapper(new HBaseAdmin(configuration));
+    } catch (MasterNotRunningException e) {
+      throw Throwables.propagate(e);
+    } catch (ZooKeeperConnectionException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+
+  @Provides
+  @Singleton
   public FileSystem providesHadoopFilesystem(Configuration conf) {
     try {
       return FileSystem.get(conf);
@@ -49,6 +65,6 @@ public class HBaseTasksModule extends AbstractModule {
   @Provides
   @Named(HBASE_PATH)
   public Path providesHBasePath(LiveConfig liveConfig) {
-    return new Path(liveConfig.getString("hbase.tasks.root.hdfs.path"));
+    return new Path(liveConfig.getStringMaybe("hbase.tasks.root.hdfs.path").or("/hbase"));
   }
 }

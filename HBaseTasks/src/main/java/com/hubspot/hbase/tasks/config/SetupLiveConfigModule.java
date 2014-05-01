@@ -11,6 +11,7 @@ public class SetupLiveConfigModule extends AbstractModule {
             .usingEnvironmentVariables()
             .usingSystemProperties()
             .usingPropertiesFile("hbasetasks.properties")
+            .usingDefaultProperties("com.hubspot")
             .build();
 
     install(new LiveConfigModule(liveConfig));

@@ -33,7 +33,7 @@ public class CommandLineArgModule extends AbstractModule {
 
   @SuppressWarnings("unchecked")
   private <T> void bindValue(Class<T> clazz, HBaseTaskOption taskOption, CommandLine commandLine) {
-    Optional<T> value = Optional.of((T) getValue(commandLine, taskOption));
+    Optional<T> value = Optional.fromNullable((T) getValue(commandLine, taskOption));
     bind(typeLiterals.get(taskOption.getTargetClass())).annotatedWith(ForArgs.forArg(taskOption)).toInstance(value);
   }
 
