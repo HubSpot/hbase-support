@@ -25,6 +25,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <metrics.version>2.2.0</metrics.version>
+    <project.entry.class>com.hubspot.hbase.tasks.HBaseTaskRunner</project.entry.class>
     <jackson.version>2.1.4</jackson.version>
     <hbase.version>0.94.15-cdh4.6.0</hbase.version>
     <hadoop.version>2.0.0-cdh4.6.0</hadoop.version>
@@ -67,14 +68,12 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop.version}</version>
-      <!--<scope>provided</scope>-->
     </dependency>
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
       <version>${hadoop.version}</version>
-      <!--<scope>provided</scope>-->
     </dependency>
 
     <dependency>
@@ -227,15 +226,25 @@
           <descriptors>
             <descriptor>src/main/assembly/hadoop-job.xml</descriptor>
           </descriptors>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
           <archive>
             <manifest>
-              <mainClass>com.hubspot.hbase.tasks.HBaseTaskRunner</mainClass>
+              <mainClass>${project.entry.class}</mainClass>
             </manifest>
           </archive>
         </configuration>
         <executions>
           <execution>
             <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>assemble-all</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>

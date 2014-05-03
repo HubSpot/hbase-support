@@ -61,7 +61,11 @@ public class HBaseTaskRunner {
       throw Throwables.propagate(e);
     }
 
-    new HelpFormatter().printHelp("hbaseTasks", options);
+    new HelpFormatter().printHelp(140, "hadoop jar {jar} {job} [commands]", "Job Choices", options, "", true);
+    Options argOptions = new Options();
+
+    CommandLineArgModule.addArgumentsToOptions(argOptions);
+    new HelpFormatter().printHelp(140, "", "Job Options", argOptions, "", true);
     System.exit(1);
     return null;
   }

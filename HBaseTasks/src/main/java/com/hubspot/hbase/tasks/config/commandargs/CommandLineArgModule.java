@@ -47,12 +47,16 @@ public class CommandLineArgModule extends AbstractModule {
     }
   }
 
-  private CommandLine parseCommandLine(String[] args) {
-    Options options = new Options();
-
+  public static void addArgumentsToOptions(Options options) {
     for (HBaseTaskOption taskOption : HBaseTaskOption.values()) {
       options.addOption(taskOption.getShortName(), taskOption.getLongName(), true, taskOption.getDescription());
     }
+  }
+
+  private CommandLine parseCommandLine(String[] args) {
+    Options options = new Options();
+
+    addArgumentsToOptions(options);
 
     try {
       return new IgnoreOptionParser().parse(options, args);
