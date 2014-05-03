@@ -1,0 +1,101 @@
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+
+  <parent>
+    <groupId>com.hubspot</groupId>
+    <artifactId>HubSpotCoprocessors</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>CMSCoprocessor</artifactId>
+  <name>CountMinSketch Coprocessor</name>
+  <version>1.0.1-SNAPSHOT</version>
+  <properties>
+    <version.prefix>v1_0_1</version.prefix>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase</artifactId>
+      <version>0.94.2-cdh4.2.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>2.0.0-cdh4.2.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.hubspot</groupId>
+      <artifactId>CoprocessorBase</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.clearspring.analytics</groupId>
+      <artifactId>stream</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.7.1</version>
+        <configuration>
+          <createDependencyReducedPom>true</createDependencyReducedPom>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+              </excludes>
+            </filter>
+          </filters>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
+              </transformers>
+              <relocations>
+                <relocation>
+                  <pattern>com.clearspring</pattern>
+                  <shadedPattern>hidden.${project.artifactId}.com.clearspring</shadedPattern>
+                  <excludes>
+                    <exclude>java.**</exclude>
+                    <exclude>javax.**</exclude>
+                    <exclude>sun.**</exclude>
+                  </excludes>
+                </relocation>
+                <relocation>
+                  <pattern>com.hubspot.hbase.coprocessor</pattern>
+                  <shadedPattern>com.hubspot.hbase.coprocessor.${version.prefix}</shadedPattern>
+                  <excludes>
+                    <exclude>java.**</exclude>
+                    <exclude>javax.**</exclude>
+                    <exclude>sun.**</exclude>
+                  </excludes>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
