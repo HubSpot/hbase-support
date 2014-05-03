@@ -17,7 +17,6 @@ import com.hubspot.hbase.tasks.jobs.GracefulLoadJob;
 import com.hubspot.hbase.tasks.jobs.GracefulShutdownJob;
 import com.hubspot.hbase.tasks.jobs.HBaseBalancerJob;
 import com.hubspot.hbase.tasks.jobs.MajorCompactServersJob;
-import com.hubspot.hbase.tasks.jobs.MajorCompactSingleTableJob;
 import com.hubspot.hbase.tasks.jobs.MergeTableRegionsJob;
 import com.hubspot.hbase.tasks.workers.HBaseBalancerWorker;
 import org.apache.commons.cli.CommandLine;
@@ -65,14 +64,13 @@ public class HBaseTaskRunner {
     Options argOptions = new Options();
 
     CommandLineArgModule.addArgumentsToOptions(argOptions);
-    new HelpFormatter().printHelp(140, "", "Job Options", argOptions, "", true);
+    new HelpFormatter().printHelp(140, "\n\n", "Job Options", argOptions, " ", true);
     System.exit(1);
     return null;
   }
 
   private void registerJobs() {
     register(CompactionJob.SHORT_OPT, CompactionJob.LONG_OPT, CompactionJob.DESCRIPTION, CompactionJob.class);
-    register(MajorCompactSingleTableJob.SHORT_OPT, MajorCompactSingleTableJob.LONG_OPT, MajorCompactSingleTableJob.DESCRIPTION, MajorCompactSingleTableJob.class);
     register(DisplayRegionStatsJob.SHORT_OPT, DisplayRegionStatsJob.LONG_OPT, DisplayRegionStatsJob.DESCRIPTION, DisplayRegionStatsJob.class);
     register(HBaseBalancerJob.SHORT_OPT, HBaseBalancerJob.LONG_OPT, HBaseBalancerJob.DESCRIPTION, HBaseBalancerJob.class);
     register(GracefulShutdownJob.SHORT_OPT, GracefulShutdownJob.LONG_OPT, GracefulShutdownJob.DESCRIPTION, GracefulShutdownJob.class);

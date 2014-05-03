@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 
 public enum HBaseTaskOption {
-  ALL_REGIONS(Boolean.class, "allRegions", "allRegions", "JOB: majorCompactTable, If true, then compact every region in the table.", false),
   ACTUALLY_RUN(Boolean.class, "actuallyRun", "actuallyRun", "JOBS: runCustomBalancer, mergeTableRegions. If true, then actually apply the result of the balancer to the cluster. For mergeTableRegions, actually execute the merges [default: false]", false),
   MAX_TIME_MILLIS(Long.class, "maxTimeMillis", "maxTimeMillis", "The number of milliseconds for which the operation should go on for. [Default: 600000]", 600000L),
   MAX_TRANSITIONS_PER_MINUTE(Integer.class, "maxTransitionsPerMinute", "maxTransitionsPerMinute", "JOB: runCustomBalancer. The max number of transitions we should try to attempt in a minute. [Default: 75]", 75),
@@ -18,14 +17,12 @@ public enum HBaseTaskOption {
   COST_FUNCTION("costFunction", "costFunction", "JOB: runCustomBalancer. A JSON structure with keys of DataSizeCost, LoadCost, LocalityCost, RegionCountCost, TransitionCost, ProximateRegionKeyCost and values of relative weights."),
   PERTURBER(String.class, "perturber", "perturber", "JOB: runCustomBalancer. Which perturber to apply to try to optimize. One of CombinedPerturber, SomewhatGreedyPerturber, GreedyPerturber, TableGreedyPerturber or RandomPerturber", "TableGreedyPerturber"),
   REVERSE_LOCALITY(Boolean.class, "reverseLocality", "reverseLocality", "JOB: majorCompactTable. If true, then compact in reverse locality order.", false),
-  COMPACTION_QUIET_TIME(Integer.class, "compactionQuietTime", "compactionQuietTime", "JOB: majorCompactTable. Amount of seconds to wait between compactions.", 5),
+  COMPACTION_QUIET_TIME(Integer.class, "compactionQuietTimeSeconds", "compactionQuietTimeSeconds", "JOB: majorCompactTable. Amount of seconds to wait between compactions. [Default: 5]", 5),
   SIMULTANEOUS_COMPACTIONS(Integer.class, "compactionQueueSize", "compactionQueueSize", "JOB: majorCompactTable. Amount of simultaneous compactions each servers should target.", 2),
   SOURCE_SERVER_NAME("source", "sourceServerName", "JOB: gracefulLoad. Specifies which server to pull regions FROM (I.E. drain regions from one server into another)."),
   PULL_MOST_LOCAL(Boolean.class, "pullMostLocal", "pullMostLocal", "JOB: gracefulLoad. When true, will load the target server with the regions most local to it.  Great for bringing up a RS that died. [Default: false]", false),
-  ROWKEY_FILTER("rowKeyFilter", "rowKeyFilter", "JOB: findDeletionEdits. The row key by which to filter WAL edits."),
   REGION_MERGE_FACTOR(Integer.class, "factor", "regionMergeFactor", "The number of regions to combine into 1.  I.E. if you specify 2, number of regions will be cut in half.  5 would reduce by a factor of 5.", 2),
-  COMPACT_THRESHOLD(Double.class, "compactThreshold", "compactThresion", "JOB: gracefulLoad, runCustomBalancer.  Will skip compacting a region if its locality is greater than this threshold.", Double.MAX_VALUE),
-  ROWKEY_FORMATTER("rowKeyFormatter", "rowKeyFormatter", "JOB: findDeletionEdits. Rough rowkey printing hack i for int, l for long. Caps for rotate left (ex contacts is Il)"),
+  COMPACT_THRESHOLD(Double.class, "compactThreshold", "compactThreshold", "JOB: gracefulLoad, runCustomBalancer.  Will skip compacting a region if its locality is greater than this threshold.", Double.MAX_VALUE),
   BALANCE_STAGNATE_ITER(Integer.class, "stagnateIterations", "stagnateIterations", "JOB: runCustomBalancer. The number of iterations to run while not getting any improvement before giving up. [DEFAULT: 100]", 100),
   TABLE("table", "table", "The name of the table to operate on."),
   COMPACTION_TYPE(String.class, "compactionType", "compactionType", "Type of compaction to run: minor or major", "major"),
