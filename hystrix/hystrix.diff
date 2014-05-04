@@ -1,0 +1,362 @@
+diff --git pom.xml pom.xml
+index 1932b64..0dcc8e9 100644
+--- pom.xml
++++ pom.xml
+@@ -33,10 +33,10 @@
+     <relativePath></relativePath><!-- no parent resolution -->
+   </parent>
+ 
+-  <groupId>org.apache.hbase</groupId>
++  <groupId>com.hubspot.hbase</groupId>
+   <artifactId>hbase</artifactId>
+   <packaging>jar</packaging>
+-  <version>0.94.2-cdh4.2.0</version>
++  <version>0.94.2-cdh4.2.0-hubspot-SNAPSHOT</version>
+   <name>HBase</name>
+   <description>
+     HBase is the &amp;lt;a href="http://hadoop.apache.org"&amp;rt;Hadoop&lt;/a&amp;rt; database. Use it when you need
+@@ -247,6 +247,13 @@
+   </developers>
+ 
+   <repositories>
++        <repository>
++            <id>HubSpot</id>
++            <url>http://maven.hubteam.com/archiva/repository/HubSpot/</url>
++            <snapshots>
++                <updatePolicy>always</updatePolicy>
++            </snapshots>
++        </repository>
+     <repository>
+       <id>cdh.repo</id>
+       <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+@@ -991,6 +998,10 @@
+     </buildDate>
+     <compileSource>1.6</compileSource>
+ 
++    <!-- CDH versions -->
++    <cdh.zookeeper.version>3.4.5-cdh4.2.0</cdh.zookeeper.version>
++    <cdh.thrift.version>0.9.0</cdh.thrift.version>
++
+     <!-- Dependencies -->
+     <commons-cli.version>1.2</commons-cli.version>
+     <commons-codec.version>1.4</commons-codec.version>
+@@ -1020,6 +1031,8 @@
+     <hadoop-snappy.version>${cdh.hadoop-snappy.version}</hadoop-snappy.version>
+     <cloudera.hash></cloudera.hash>
+ 
++    <hystrix.version>1.2.16</hystrix.version>
++
+     <package.prefix>/usr</package.prefix>
+     <package.conf.dir>/etc/hbase</package.conf.dir>
+     <package.log.dir>/var/log/hbase</package.log.dir>
+@@ -1269,6 +1282,13 @@
+       <version>2.3.1</version>
+     </dependency>
+ 
++    <dependency>
++      <groupId>com.netflix.hystrix</groupId>
++      <artifactId>hystrix-core</artifactId>
++      <version>${hystrix.version}</version>
++    </dependency>
++
++
+     <!-- REST dependencies -->
+     <dependency>
+       <groupId>com.google.protobuf</groupId>
+@@ -2527,4 +2547,17 @@
+       </plugin>
+     </plugins>
+   </reporting>
++
++    <distributionManagement>
++        <repository>
++            <id>HubSpot-Releases</id>
++            <url>http://maven.hubteam.com/nexus/content/repositories/releases</url>
++        </repository>
++        <snapshotRepository>
++            <id>HubSpot-Snapshots</id>
++            <url>http://maven.hubteam.com/nexus/content/repositories/snapshots</url>
++        </snapshotRepository>
++    </distributionManagement>
++
+ </project>
++
+diff --git src/main/java/org/apache/hadoop/hbase/HConstants.java src/main/java/org/apache/hadoop/hbase/HConstants.java
+index f2a4c8d..f33e32c 100644
+--- src/main/java/org/apache/hadoop/hbase/HConstants.java
++++ src/main/java/org/apache/hadoop/hbase/HConstants.java
+@@ -564,6 +564,71 @@ public final class HConstants {
+    */
+   public static int DEFAULT_HBASE_RPC_TIMEOUT = 60000;
+ 
++  /**
++   * whether or not to enable hystrix
++   */
++  public static final String HBASE_ENABLE_HYSTRIX = "hbase.regionserver.enable.hystrix";
++
++  /**
++   * Default value of {@link #HBASE_ENABLE_HYSTRIX}
++   */
++  public static final boolean DEFAULT_HBASE_ENABLE_HYSTRIX = false;
++
++  /**
++   * thread core size per region server
++   */
++  public static final String HBASE_REGIONSERVER_THREAD_CORE_SIZE = "hbase.regionserver.thread.core.size";
++
++  /**
++   * Default value of {@link #HBASE_REGIONSERVER_THREAD_CORE_SIZE}
++   */
++  public static final int DEFAULT_HBASE_REGIONSERVER_THREAD_CORE_SIZE = 25;
++
++  /**
++   * region server queue rejection threshold
++   */
++  public static final String HBASE_REGIONSERVER_THREAD_QUEUE_REJECTION_THRESHOLD = "hbase.regionserver.thread.queue.rejection.threshold";
++
++  /**
++   * Default value of {@link #HBASE_REGIONSERVER_THREAD_QUEUE_REJECTION_THRESHOLD}
++   */
++  public static final int DEFAULT_HBASE_REGIONSERVER_THREAD_QUEUE_REJECTION_THRESHOLD = 10;
++
++  /**
++   * region server max queue size
++   */
++  public static final String HBASE_REGIONSERVER_THREAD_MAX_QUEUE_SIZE = "hbase.regionserver.thread.queue.size";
++
++  /**
++   * Default value of {@link #HBASE_REGIONSERVER_THREAD_MAX_QUEUE_SIZE}
++   */
++  public static final int DEFAULT_HBASE_REGIONSERVER_THREAD_MAX_QUEUE_SIZE = -1;
++
++  /**
++   * circuit breaker error threshold percentage
++   */
++  public static final String HBASE_REGIONSERVER_CIRCUIT_BREAKER_ERROR_THRESHOLD_PERCENTAGE = "hbase.regionserver.circuit.breaker.error.threshold.percentage";
++
++  /**
++   * Default value of {@link #HBASE_REGIONSERVER_CIRCUIT_BREAKER_ERROR_THRESHOLD_PERCENTAGE}
++   */
++  public static final int DEFAULT_HBASE_REGIONSERVER_CIRCUIT_BREAKER_ERROR_THRESHOLD_PERCENTAGE = 25;
++
++  /**
++   * circuit breaker request volume threshold
++   */
++  public static final String HBASE_REGIONSERVER_CIRCUIT_BREAKER_VOLUME_THRESHOLD = "hbase.regionserver.circuit.breaker.volume.threshold";
++
++  /**
++   * Default value of {@link #HBASE_REGIONSERVER_CIRCUIT_BREAKER_VOLUME_THRESHOLD}
++   */
++  public static final int DEFAULT_HBASE_REGIONSERVER_CIRCUIT_BREAKER_VOLUME_THRESHOLD = 10;
++
++  /**
++   * circuit breaker sleep window
++   */
++  public static final String HBASE_REGIONSERVER_CIRCUIT_SLEEP_WINDOW_MILLIS = "hbase.regionserver.circuit.breaker.sleep.millis";
++
+   /*
+    * cluster replication constants.
+    */
+diff --git src/main/java/org/apache/hadoop/hbase/client/HConnectionManager.java src/main/java/org/apache/hadoop/hbase/client/HConnectionManager.java
+index b20415a..b7de64c 100644
+--- src/main/java/org/apache/hadoop/hbase/client/HConnectionManager.java
++++ src/main/java/org/apache/hadoop/hbase/client/HConnectionManager.java
+@@ -43,6 +43,8 @@ import java.util.concurrent.Future;
+ import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.concurrent.atomic.AtomicInteger;
+ 
++import com.google.common.base.Throwables;
++import com.netflix.hystrix.HystrixCommand;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+ import org.apache.hadoop.conf.Configuration;
+@@ -1351,28 +1353,55 @@ public class HConnectionManager {
+       return callable.withoutRetries();
+     }
+ 
+-    private <R> Callable<MultiResponse> createCallable(final HRegionLocation loc,
+-        final MultiAction<R> multi, final byte [] tableName) {
++    private class RegionCommand<R> extends HystrixCommand<MultiResponse> {
++      private final HRegionLocation loc;
++      private final MultiAction<R> multi;
++      private final byte [] tableName;
++      private final HConnection connection;
++
++      private RegionCommand(final HConnection connection, final HRegionLocation loc, final MultiAction<R> multi, final byte[] tableName) {
++        super(ServerCallable.generateCommandSetter(loc.getHostname(), conf));
++
++        this.connection = connection;
++        this.loc = loc;
++        this.multi = multi;
++        this.tableName = tableName;
++      }
++
++      public MultiResponse runWithoutHystrix() throws Exception {
++        return run();
++      }
++
++      @Override
++      protected MultiResponse run() throws Exception {
++        final ServerCallable<MultiResponse> serverCallable = new ServerCallable<MultiResponse>(connection, tableName, null) {
++          @Override
++          public MultiResponse call() throws IOException {
++            return server.multi(multi);
++          }
++
++          @Override
++          public void connect(final boolean reload) throws IOException {
++            server = connection.getHRegionConnection(loc.getHostname(), loc.getPort());
++          }
++        };
++        try {
++          serverCallable.setHystrixEnabled(false);
++          return serverCallable.withoutRetries();
++        } catch (Throwable t) {
++          LOG.info("Hystrix HBase", t);
++          throw Throwables.propagate(t);
++        }
++      }
++    }
++
++    private <R> RegionCommand<R> createCallable(final HRegionLocation loc,
++                                                final MultiAction<R> multi, final byte [] tableName) {
+       // TODO: This does not belong in here!!! St.Ack  HConnections should
+       // not be dealing in Callables; Callables have HConnections, not other
+       // way around.
+-      final HConnection connection = this;
+-      return new Callable<MultiResponse>() {
+-       public MultiResponse call() throws IOException {
+-         ServerCallable<MultiResponse> callable =
+-           new ServerCallable<MultiResponse>(connection, tableName, null) {
+-             public MultiResponse call() throws IOException {
+-               return server.multi(multi);
+-             }
+-             @Override
+-             public void connect(boolean reload) throws IOException {
+-               server = connection.getHRegionConnection(loc.getHostname(), loc.getPort());
+-             }
+-           };
+-         return callable.withoutRetries();
+-       }
+-     };
+-   }
++      return new RegionCommand<R>(this, loc, multi, tableName);
++    }
+ 
+     public void processBatch(List<? extends Row> list,
+         final byte[] tableName,
+@@ -1522,7 +1551,18 @@ public class HConnectionManager {
+                 actionsByServer.size());
+ 
+         for (Entry<HRegionLocation, MultiAction<R>> e: actionsByServer.entrySet()) {
+-          futures.put(e.getKey(), pool.submit(createCallable(e.getKey(), e.getValue(), tableName)));
++          final RegionCommand<R> callable = createCallable(e.getKey(), e.getValue(), tableName);
++          if (conf.getBoolean(HConstants.HBASE_ENABLE_HYSTRIX, HConstants.DEFAULT_HBASE_ENABLE_HYSTRIX)) {
++            futures.put(e.getKey(), callable.queue());
++          } else {
++            futures.put(e.getKey(), pool.submit(new Callable<MultiResponse>() {
++              @Override
++              public MultiResponse call() throws Exception {
++                return callable.runWithoutHystrix();
++              }
++            }));
++          }
++
+         }
+ 
+         // step 3: collect the failures and successes and prepare for retry
+diff --git src/main/java/org/apache/hadoop/hbase/client/ServerCallable.java src/main/java/org/apache/hadoop/hbase/client/ServerCallable.java
+index fcf43e7..da28c16 100644
+--- src/main/java/org/apache/hadoop/hbase/client/ServerCallable.java
++++ src/main/java/org/apache/hadoop/hbase/client/ServerCallable.java
+@@ -27,7 +27,16 @@ import java.net.SocketTimeoutException;
+ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.concurrent.Callable;
++import java.util.concurrent.atomic.AtomicBoolean;
+ 
++import com.google.common.base.Objects;
++import com.google.common.base.Strings;
++import com.netflix.hystrix.HystrixCommand;
++import com.netflix.hystrix.HystrixCommandGroupKey;
++import com.netflix.hystrix.HystrixCommandKey;
++import com.netflix.hystrix.HystrixCommandProperties;
++import com.netflix.hystrix.HystrixThreadPoolKey;
++import com.netflix.hystrix.HystrixThreadPoolProperties;
+ import org.apache.hadoop.conf.Configuration;
+ import org.apache.hadoop.hbase.DoNotRetryIOException;
+ import org.apache.hadoop.hbase.HConstants;
+@@ -49,6 +58,7 @@ import org.apache.hadoop.ipc.RemoteException;
+  * @param <T> the class that the ServerCallable handles
+  */
+ public abstract class ServerCallable<T> implements Callable<T> {
++  private final AtomicBoolean enableHystrix = new AtomicBoolean(true);
+   protected final HConnection connection;
+   protected final byte [] tableName;
+   protected final byte [] row;
+@@ -160,7 +170,7 @@ public abstract class ServerCallable<T> implements Callable<T> {
+       try {
+         beforeCall();
+         connect(tries != 0);
+-        return call();
++        return callWithHystrix();
+       } catch (Throwable t) {
+         shouldRetry(t);
+         t = translateException(t);
+@@ -207,7 +217,7 @@ public abstract class ServerCallable<T> implements Callable<T> {
+     try {
+       beforeCall();
+       connect(false);
+-      return call();
++      return callWithHystrix();
+     } catch (Throwable t) {
+       Throwable t2 = translateException(t);
+       if (t2 instanceof IOException) {
+@@ -232,4 +242,47 @@ public abstract class ServerCallable<T> implements Callable<T> {
+     }
+     return t;
+   }
++
++  private T callWithHystrix() throws Exception {
++    if (enableHystrix.get()) {
++      return new WrappedHystrixCommand().run();
++    } else {
++      return call();
++    }
++  }
++
++  private class WrappedHystrixCommand extends HystrixCommand<T> {
++    private WrappedHystrixCommand() {
++      super(generateCommandSetter(Objects.firstNonNull(getServerName(), "default"), getConnection().getConfiguration()));
++    }
++
++    @Override
++    protected T run() throws Exception {
++      return ServerCallable.this.call();
++    }
++  }
++
++  public void setHystrixEnabled(final boolean hystrixEnabled) {
++    this.enableHystrix.set(hystrixEnabled);
++  }
++
++  public static HystrixCommand.Setter generateCommandSetter(final String regionServerName, final Configuration conf) {
++    final int rpcTimeout = conf.getInt(HConstants.HBASE_RPC_TIMEOUT_KEY, HConstants.DEFAULT_HBASE_RPC_TIMEOUT);
++    final String baseServerName = Strings.isNullOrEmpty(regionServerName) ? "null" : regionServerName.split("\\.")[0];
++    return HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("HBaseClientKey"))
++	      .andCommandKey(HystrixCommandKey.Factory.asKey(String.format("%s-hbase", baseServerName)))
++        .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
++            .withExecutionIsolationThreadTimeoutInMilliseconds(rpcTimeout)
++            .withCircuitBreakerSleepWindowInMilliseconds(conf.getInt(HConstants.HBASE_REGIONSERVER_CIRCUIT_SLEEP_WINDOW_MILLIS, rpcTimeout))
++            .withCircuitBreakerErrorThresholdPercentage(conf.getInt(HConstants.HBASE_REGIONSERVER_CIRCUIT_BREAKER_ERROR_THRESHOLD_PERCENTAGE, HConstants.DEFAULT_HBASE_REGIONSERVER_CIRCUIT_BREAKER_ERROR_THRESHOLD_PERCENTAGE))
++            .withCircuitBreakerRequestVolumeThreshold(conf.getInt(HConstants.HBASE_REGIONSERVER_CIRCUIT_BREAKER_VOLUME_THRESHOLD, HConstants.DEFAULT_HBASE_REGIONSERVER_CIRCUIT_BREAKER_VOLUME_THRESHOLD))
++            .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.THREAD)
++        )
++        .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter()
++            .withCoreSize(conf.getInt(HConstants.HBASE_REGIONSERVER_THREAD_CORE_SIZE, HConstants.DEFAULT_HBASE_REGIONSERVER_THREAD_CORE_SIZE))
++            .withQueueSizeRejectionThreshold(conf.getInt(HConstants.HBASE_REGIONSERVER_THREAD_QUEUE_REJECTION_THRESHOLD, HConstants.DEFAULT_HBASE_REGIONSERVER_THREAD_QUEUE_REJECTION_THRESHOLD))
++            .withMaxQueueSize(conf.getInt(HConstants.HBASE_REGIONSERVER_THREAD_MAX_QUEUE_SIZE, HConstants.DEFAULT_HBASE_REGIONSERVER_THREAD_MAX_QUEUE_SIZE)))
++
++        .andThreadPoolKey(HystrixThreadPoolKey.Factory.asKey(String.format("HBaseServerCommand-%s", regionServerName)));
++  }
+ }
