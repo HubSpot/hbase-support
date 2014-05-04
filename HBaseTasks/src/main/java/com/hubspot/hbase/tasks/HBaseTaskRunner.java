@@ -79,7 +79,7 @@ public class HBaseTaskRunner {
     register(MajorCompactServersJob.SHORT_OPT, MajorCompactServersJob.LONG_OPT, MajorCompactServersJob.DESCRIPTION, MajorCompactServersJob.class);
     register(FlushMemstoreJob.SHORT_OPT, FlushMemstoreJob.LONG_OPT, FlushMemstoreJob.DESCRIPTION, FlushMemstoreJob.class);
     register(CompactRegionsFromFileJob.SHORT_OPT, CompactRegionsFromFileJob.LONG_OPT, CompactRegionsFromFileJob.DESCRIPTION, CompactRegionsFromFileJob.class);
-    register(HBaseBalancerJob.SHORT_OPT, HBaseBalancerJob.LONG_OPT, HBaseBalancerJob.DESCRIPTION, HBaseBalancerWorker.class);
+    register(HBaseBalancerJob.SHORT_OPT + "Daemon", HBaseBalancerJob.LONG_OPT + "Daemon", HBaseBalancerJob.DESCRIPTION, HBaseBalancerWorker.class);
     register(ClusterStatusReporterJob.JOB_NAME, ClusterStatusReporterJob.JOB_NAME, ClusterStatusReporterJob.DESCRIPTION, ClusterStatusReporterJob.class);
   }
 

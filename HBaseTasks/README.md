@@ -14,7 +14,25 @@ $ hadoop jar HBaseTasks-0.1-SNAPSHOT-job.jar -displayRegionStats
 The command will then output something like this:
 
 ```
-(TODO)
++---------------------------------------------------------------------------------------------------+
+|                                       Region info by table                                        |
++---------------------------------------------------------------------------------------------------+
+|Table name                                        |Count  |Load    |Size   |50th   |95th   |Lcty   |
+|--------------------------------------------------+-------+--------+-------+-------+-------+-------|
+|tableA                                            |301    |0.001   |164 MB |53 KB  |2 MB   |1.0000 |
+|tableB                                            |201    |0.001   |229 MB |1 MB   |1 MB   |1.0000 |
++---------------------------------------------------------------------------------------------------+
+
+
+
++---------------------------------------------------------------------------------------------------+
+|                                       Region info by server                                       |
++---------------------------------------------------------------------------------------------------+
+|Region server                                     |Count  |Load    |Size   |50th   |95th   |Lcty   |
+|--------------------------------------------------+-------+--------+-------+-------+-------+-------|
+|server2.domain.net                     |1243   |0.467   |101 GB |32 KB  |39 MB  |1.0000 |
+|server1.domain.net                     |1327   |0.533   |100 GB |33 KB  |39 MB  |1.0000 |
++---------------------------------------------------------------------------------------------------+
 ```
 
 At HubSpot, we rarely see localities below 1.0. Part of that reason is the set of utilities in this package.
@@ -162,6 +180,68 @@ This job is used to synchronously flush the memstore in a table.
 
 ### gracefulLoad
 
+Load regions onto a server, in such a way that it's balanced
+with the rest of the cluster.
+
+#### Options
+
+
+##### Regions to load
+
+- -source SERVER_HOST_NAME : Instead of pulling from the cluster, you can take from another server.
+- -pullMostLocal : If specified, try to pull regions that have the highest locality on the 
+- -inputFile FILE_PATH : If provided, load regions that are listed in the file.
+
+##### General options
+
+- -serverName SERVER_HOST_NAME : The server host name according to hbase target server.
+- -compactPostMove : If specified, compact regions as they're moved to the destination server.
+
+##### Compaction options (if compact post move)
+
+- -compactionQueueSize QUEUE_SIZE : How large the queue size on the region server can be allowed to be. Once the queue is this large the compaction job waits to submit.
+- -compactionQuietTimeSeconds SECONDS : After the region server has room (deterined by compactionQueueSize), how long do we wait until the region server gets another region to compact.
+- -compactionType TYPE : Either "major" or "minor". Defaults to "major".
+- -compactThreshold LOCALITY : If the region has grater than LOCALITY, don't bother compacting it. This is useful if you only want to compact badly distributed regions to regain locality. Default: MAX_VALUE
+
+### gracefulShutdown
+
+Shutdown a server gracefully, by unloading regions.
+
+#### Options
+
+- -serverName SERVER_HOST_NAME : The server host name according to hbase target server.
+- -compactPostMove : If specified, compact regions as they're moved to the destination server.
+- -outputFile FILE_PATH : Write new region assignments to this file.
+
+##### Compaction options (if compact post move)
+
+- -compactionQueueSize QUEUE_SIZE : How large the queue size on the region server can be allowed to be. Once the queue is this large the compaction job waits to submit.
+- -compactionQuietTimeSeconds SECONDS : After the region server has room (deterined by compactionQueueSize), how long do we wait until the region server gets another region to compact.
+- -compactionType TYPE : Either "major" or "minor". Defaults to "major".
+- -compactThreshold LOCALITY : If the region has grater than LOCALITY, don't bother compacting it. This is useful if you only want to compact badly distributed regions to regain locality. Default: MAX_VALUE
+
+### runCustomBalancer
+
+This runs a simulated annealing based balancer on the cluster after telling the HBaseAdmin to stop running its own balancer.
+
+#### Options
+
+##### Region moving options
+
+- -actuallyRun : If specified, actually apply the transitions. Otherwise, just display what transitions it would make and what impact it would have on the cluster.
+- -inputFile FILE_PATH : A path to the file exported by `displayRegionStats -outputFile`. If specified, use this file to optimize rather than the actual cluster. This is useful to test what the balancer would do without running the balancer on a cluster.
+- -maxOptimizationTimeSeconds SECONDS : Limit how long the optimization step can last. Default: 30 seconds.
+- -maxTransitionsPerMinute TRANSITIONS : Limits the number of region moves on the cluster per minute. Default: 75
+- -table TABLE_NAME : Limit the balancing to just this one table.
+- -maxTimeMillis MILLISECONDS : Approximately how long the balancing step should take.
+
+
+##### Simulated annealing options
+
+- -costFunction COST_FUNCTION_JSON : A JSON object representing the relative weights of various cost functions: "DataSizeCost, LoadCost, LocalityCost, RegionCountCost, TransitionCost, ProximateRegionKeyCost". Default: `{"DataSizeCost":1000,"ProximateRegionKeyCost":5,"LocalityCost":75,"TransitionCost":2000}`
+- -perturber PERTURBER : The name of the perturber used to move regions around. One of CombinedPerturber, "SomewhatGreedyPerturber, GreedyPerturber, TableGreedyPerturber or RandomPerturber". Default: `TableGreedyPerturber`
+- -stagnateIterations ITERATIONS : The number of iterations the simulated annealing is allowed to "stagnate" before the optimization is short circuited.
 
 
 
