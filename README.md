@@ -10,7 +10,7 @@ A collection of tasks that can be used to augment the standard jruby scripts + h
 
 ## hystrix
 
-We currently use a modified hbase client with [hystrix](https://github.com/Netflix/Hystrix) to prevent one single region server slowness from causing upstream problems. See [the patch](https://github.com/HubSpot/hbase-support/tree/master/hystrix/hystrix.diff), and a [github comparison](https://github.com/HubSpot/hbase/compare/cdh4-0.94.2_4.2.0...cdh-4.2.0-hubspot).
+We currently use a modified hbase client with [hystrix](https://github.com/Netflix/Hystrix) to prevent one single region server slowness from causing upstream problems. See our [hystrix](https://github.com/HubSpot/hbase-support/tree/master/hystrix/) repository for more information.
 
 ## HubSpotCoprocessors
 
