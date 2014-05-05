@@ -37,6 +37,40 @@ The command will then output something like this:
 
 At HubSpot, we rarely see localities below 1.0. Part of that reason is the set of utilities in this package.
 
+Let's try running the balancer (without `actuallyRun`):
+
+```
+Ran 3840 steps
+---------------------------------------------
+  Cost for 'Initial'
+---------------------------------------------
+   DataSizeCost          x 1000.00 -> 537.227
+   ProximateRegionKeyCost x 5.00 -> 4.576
+   LocalityCost          x 75.00 -> 0.000
+   TransitionCost        x 2000.00 -> 0.000
+---------------------------------------------
+     TOTAL: 541.803
+---------------------------------------------
+
+
+---------------------------------------------
+  Cost for 'Final'
+---------------------------------------------
+   DataSizeCost          x 1000.00 -> 7.545
+   ProximateRegionKeyCost x 5.00 -> 4.103
+   LocalityCost          x 75.00 -> 0.000
+   TransitionCost        x 2000.00 -> 0.884
+---------------------------------------------
+     TOTAL: 12.532
+---------------------------------------------
+
+
+Total transitions: 502 / 750
+```
+
+We see that it thinks that if we move 502 regions (out of the 750 allowed on this run), then we will
+have a significant improvement.
+
 
 ## Help
 
