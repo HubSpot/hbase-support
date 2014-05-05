@@ -5,7 +5,7 @@ HBaseTasks is a collection of java utilities to augment the standard hbase maste
 ## Quick Start
 The initial release is compiled against **HBase 0.94.15-cdh4.6.0** (as determined by the `hbase.version` property in the pom). It's possible that this project will work against a close version, but use at your own risk. 
 
-To start, let's just get some stats of our region locality (% of data that's local to the region server). Download `HBaseTasks-0.1-SNAPSHOT-job.jar` (TODO) and place on a server configured for your cluster (e.g. a standby master). Then run:
+To start, let's just get some stats of our region locality (% of data that's local to the region server). Download [HBaseTasks-0.1-SNAPSHOT-jar-with-dependencies.jar](https://www.dropbox.com/s/64r9lzi582ztcr7/HubSpotHBaseTasks-0.1-SNAPSHOT-jar-with-dependencies.jar) and place on a server configured for your cluster (e.g. a standby master). Then run:
 
 ```bash
 $ hadoop jar HBaseTasks-0.1-SNAPSHOT-job.jar -displayRegionStats
