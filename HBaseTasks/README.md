@@ -277,8 +277,34 @@ This runs a simulated annealing based balancer on the cluster after telling the 
 - -perturber PERTURBER : The name of the perturber used to move regions around. One of CombinedPerturber, "SomewhatGreedyPerturber, GreedyPerturber, TableGreedyPerturber or RandomPerturber". Default: `TableGreedyPerturber`
 - -stagnateIterations ITERATIONS : The number of iterations the simulated annealing is allowed to "stagnate" before the optimization is short circuited.
 
+### mergeRegionsInTable
 
+Allows merging of regions for a disabled table, in an otherwise online HBase cluster.
 
+DANGER! We have used this to merge the regions of multiple production tables, but it is provided AS-IS.  I recommend familiarizing yourself with the code——which was taken from HBase's own source and made publicly accessible——and testing on QA or test tables.
+
+Here was our workflow, to make this as safe as possible:
+
+1. Disable target table
+2. Snapshot table.
+3. Create clone from snapshot.
+4. Major compact snapshot (important! make sure this finishes).
+5. Verify 3 finished.  You can hdfs dfs -ls -R /hbase/clone-table-name, and see that there are no pointer files from the initial snapshot.
+6. Disable clone-table-name
+7. Run mergeRegionsInTable on clone-table-name
+8. Enable clone-table-name
+9. Do some scans, run hbase hbck, or otherwise verify it looks good.
+10. If good, use this as the new table.  Otherwise, drop table and use the original (still disabled) table.
+
+The clone -> compact workflow provides you some safety incase something goes wrong.
+
+##### Options
+
+- -actuallyRun : If specified, actually run the merge.  Otherwise just goes through the motions and prints some debug output
+- -table : the table to merge regions for
+- -factor NUM : By what facter should reduce the number of regions.  You will be left with approximately ```currentRegions / NUM``` regions after.  I.E. Factor of 2 would cut the number in half.  Ignored if ```-emptyRegionsOnly``` is specified.
+- -emptyRegionsOnly : If specified, finds all sets of contiguous empty regions and merges them with the nearest non-empty region for each set.  Ignores ```-factor``` options when set.
+- 
 ## License
 HBaseTasks is released under the Apache 2.0 License.
 
