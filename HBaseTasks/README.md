@@ -287,12 +287,12 @@ Here was our workflow, to make this as safe as possible:
 
 1. Disable target table
 2. Snapshot table.
-3. Create clone from snapshot.
-4. Major compact snapshot (important! make sure this finishes).
-5. Verify 3 finished.  You can hdfs dfs -ls -R /hbase/clone-table-name, and see that there are no pointer files from the initial snapshot.
-6. Disable clone-table-name
-7. Run mergeRegionsInTable on clone-table-name
-8. Enable clone-table-name
+3. Create clone from snapshot: ```clone-table-name```.
+4. Major compact ```clone-table-name``` (important! make sure this finishes before continuing).
+5. Verify 3 finished.  You can ```hdfs dfs -ls -R /hbase/clone-table-name```, and see that there are no pointer files from the initial snapshot.
+6. Disable ```clone-table-name```
+7. Run mergeRegionsInTable on ```clone-table-name```
+8. Enable ```clone-table-name```
 9. Do some scans, run hbase hbck, or otherwise verify it looks good.
 10. If good, use this as the new table.  Otherwise, drop table and use the original (still disabled) table.
 
