@@ -301,7 +301,7 @@ The clone -> compact workflow provides you some safety incase something goes wro
 ##### Options
 
 - -actuallyRun : If specified, actually run the merge.  Otherwise just goes through the motions and prints some debug output
-- -table : the table to merge regions for
+- -table TABLE_NAME : the table to merge regions for
 - -factor NUM : By what facter should reduce the number of regions.  You will be left with approximately ```currentRegions / NUM``` regions after.  I.E. Factor of 2 would cut the number in half.  Ignored if ```-emptyRegionsOnly``` is specified.
 - -emptyRegionsOnly : If specified, finds all sets of contiguous empty regions and merges them with the nearest non-empty region for each set.  Ignores ```-factor``` options when set.
 - 
